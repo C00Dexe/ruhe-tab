@@ -13,10 +13,16 @@ Eine kleine, eigenständige Erweiterung, inspiriert vom Prinzip einer ruhigen St
 
 Du brauchst keinen Server, kein Terminal, Node.js oder ein Entwicklerkonto. Der Ordner muss an seinem Speicherort bleiben. Falls Momentum oder eine andere Erweiterung ebenfalls die neue Tab-Seite ersetzt, deaktiviere sie zum Testen.
 
+## Bestehende Installation aktualisieren
+
+Lade die neue ZIP herunter und entpacke sie separat. Schließe bestehende Ruhe-Tabs und ersetze die Dateien im **bisherigen Installationsordner** durch den Inhalt des neuen Unterordners `ruhe-tab`. Ändere den bisherigen Ordnerpfad nicht. Öffne dann `chrome://extensions`, klicke bei Ruhe Tab auf ↻ und öffne einen neuen Tab. Entferne die Erweiterung dafür nicht. So wird derselbe lokale Speicher für deine bisherigen Daten verwendet.
+
 ## Bedienung
 
 - **Uhrzeit und Datum:** Verwenden automatisch die Uhr und Zeitzone deines Rechners. Die Anzeige verwendet das deutsche 24-Stunden-Format.
-- **Name:** Klicke unten links auf „Dein Name“, gib deinen Vornamen ein und klicke auf „Speichern“. Ein leerer Name entfernt die Personalisierung.
+- **Name:** Klicke unten links auf „Einstellungen“, gib deinen Vornamen ein und klicke auf „Speichern“. Ein leerer Name entfernt die Personalisierung.
+- **Einstellungen einklappen:** Klicke erneut auf „Einstellungen“, außerhalb des Felds oder drücke Escape. Das Feld schwebt über der Seite, ohne die Inhalte zu verschieben.
+- **Webseiten:** Klicke auf „+ Verknüpfung hinzufügen“, gib einen Namen und die Webadresse ein und speichere. Ohne Schema ergänzen wir `https://`. Ein Klick auf die Kachel öffnet die Webseite im selben Tab. Mit „Bearbeiten“ erscheinen die ×-Schaltflächen zum Löschen; „Fertig“ blendet sie wieder aus. Maximal zwölf Verknüpfungen werden lokal gespeichert. Unterstützt werden HTTP und HTTPS ohne eingebettete Zugangsdaten.
 - **Tagesziel:** Trage dein Ziel ein und drücke Enter oder klicke auf ↵. Das Kästchen markiert es als erledigt. Um es zu ändern, bearbeite den Text und speichere erneut. Ein leerer Text entfernt es.
 - **Neuer Tag:** Das Tagesziel wird beim nächsten Anzeigen oder Aktualisieren nach dem lokalen Tageswechsel geleert. Aufgaben bleiben bestehen.
 - **Aufgaben:** Gib einen Text ein und drücke Enter oder klicke auf +. Über das Kästchen hakst du eine Aufgabe ab; × löscht sie sofort. Die Liste erlaubt maximal 50 Aufgaben mit jeweils 160 Zeichen.
@@ -24,13 +30,13 @@ Du brauchst keinen Server, kein Terminal, Node.js oder ein Entwicklerkonto. Der 
 
 ## Datenschutz und Leistung
 
-Die Erweiterung enthält nur HTML, CSS, JavaScript und die Chrome-Konfiguration im Manifest-V3-Format. Es gibt keine Bibliotheken, externen Schriftarten, Onlinebilder, Werbung, Telemetrie, Benutzerkonten, Serververbindungen oder kostenpflichtigen Funktionen. Auch der dezente Hintergrund entsteht vollständig aus lokalem CSS.
+Die Erweiterung enthält nur HTML, CSS, JavaScript und die Chrome-Konfiguration im Manifest-V3-Format. Es gibt keine Bibliotheken, externen Schriftarten, Onlinebilder, Werbung, Telemetrie, Benutzerkonten, Serververbindungen oder kostenpflichtigen Funktionen. Auch der dezente Hintergrund entsteht vollständig aus lokalem CSS. Die Symbole der Verknüpfungen bestehen aus dem ersten Buchstaben des Namens; es werden keine Logos oder Vorschauen heruntergeladen. Erst ein Klick auf eine Verknüpfung öffnet die gewählte Webseite und führt zu den üblichen Verbindungen dieser Webseite.
 
-Das Manifest fordert keine zusätzlichen Berechtigungen an. Es gibt keine Zugriffserlaubnis auf Webseiten, den Verlauf oder den Standort. Die Sicherheitsrichtlinie erlaubt nur mitgelieferte Skripte und Styles und blockiert Netzwerkverbindungen (`connect-src 'none'`). Es gibt keine Content-Skripte, Service Worker oder sonstigen Hintergrundprozesse.
+Das Manifest fordert keine zusätzlichen Berechtigungen an. Es gibt keine Zugriffserlaubnis auf Webseiten, die Chrome-Lesezeichen, den Verlauf oder den Standort. Verknüpfungen legst du selbst an; es gibt keinen automatischen Import. Die Sicherheitsrichtlinie erlaubt nur mitgelieferte Skripte und Styles und blockiert Netzwerkverbindungen (`connect-src 'none'`). Es gibt keine Content-Skripte, Service Worker oder sonstigen Hintergrundprozesse.
 
 Die Uhr plant eine Aktualisierung zur nächsten vollen Minute. Bei verstecktem Tab wird dieser Timer beendet; beim erneuten Anzeigen wird die Uhr sofort aktualisiert. Es gibt keine Animationen und keine regelmäßigen Speicherzugriffe außer dem Datumstest bei einer Uhraktualisierung. Ganz ohne Ressourcenverbrauch funktioniert eine geöffnete Seite nicht; die Ausführung ist bewusst klein gehalten.
 
-Name, Tagesziel und Aufgaben liegen als Klartext unter `ruhe-tab-v1` in `localStorage` des Erweiterungsprofils. Das ist lokaler Browserspeicher, kein Cloudspeicher. Es ist keine verschlüsselte Ablage für Geheimnisse. Ein Löschen des Browserprofils oder Entfernen der Erweiterung kann die Daten entfernen; es gibt keine automatische Sicherung.
+Name, Tagesziel, Aufgaben und Webseiten-Verknüpfungen liegen als Klartext unter `ruhe-tab-v1` in `localStorage` des Erweiterungsprofils. Das ist lokaler Browserspeicher, kein Cloudspeicher. Es ist keine verschlüsselte Ablage für Geheimnisse. Ein Löschen des Browserprofils oder Entfernen der Erweiterung kann die Daten entfernen; es gibt keine automatische Sicherung.
 
 ## Dateien verstehen und ändern
 

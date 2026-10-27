@@ -39,10 +39,31 @@
       <p id="empty-tasks" class="empty-state">Noch nichts auf deiner Liste.<br>Genieße den freien Kopf.</p>
       <p id="task-limit" class="hint" hidden>Deine Liste ist voll (50 Aufgaben). Lösche zuerst eine Aufgabe.</p>
     </aside>
+    <section class="shortcuts" aria-labelledby="shortcuts-title">
+      <div class="shortcuts-heading">
+        <h2 id="shortcuts-title" class="eyebrow">DEINE WEBSEITEN</h2>
+        <button id="edit-shortcuts" type="button" aria-pressed="false" hidden>Bearbeiten</button>
+      </div>
+      <ul id="shortcut-list" class="shortcut-list"></ul>
+      <button id="add-shortcut" class="add-shortcut" type="button">+ Verknüpfung hinzufügen</button>
+      <p id="shortcut-limit" class="hint" hidden>12 Verknüpfungen gespeichert. Unter „Bearbeiten“ kannst du Platz schaffen.</p>
+    </section>
   </main>
+  <dialog id="shortcut-dialog" aria-labelledby="shortcut-dialog-title">
+    <form id="shortcut-form">
+      <h2 id="shortcut-dialog-title">Webseite verknüpfen</h2>
+      <label for="shortcut-name">Name</label>
+      <input id="shortcut-name" maxlength="32" placeholder="Zum Beispiel Wikipedia" required autocomplete="off">
+      <label for="shortcut-url">Webadresse</label>
+      <input id="shortcut-url" maxlength="2048" placeholder="https://de.wikipedia.org" required autocomplete="off" spellcheck="false" aria-describedby="shortcut-help shortcut-error">
+      <p id="shortcut-help" class="hint">Ohne https:// ergänzen wir es automatisch. Die Adresse bleibt lokal gespeichert.</p>
+      <p id="shortcut-error" role="alert"></p>
+      <div class="dialog-actions"><button id="cancel-shortcut" type="button">Abbrechen</button><button type="submit">Speichern</button></div>
+    </form>
+  </dialog>
   <footer>
     <details id="personalization">
-      <summary>Dein Name</summary>
+      <summary><span aria-hidden="true">⚙</span> Einstellungen</summary>
       <form id="name-form" class="name-form">
         <label for="name-input">Wie möchtest du begrüßt werden?</label>
         <div class="line-form"><input id="name-input" maxlength="40" placeholder="Dein Vorname" autocomplete="off"><button type="submit">Speichern</button></div>

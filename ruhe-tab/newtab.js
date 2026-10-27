@@ -3,15 +3,30 @@
 (() => {
   const KEY = "ruhe-tab-v1";
   const MAX_TASKS = 50;
+  const MAX_SHORTCUTS = 12;
+  let editingShortcuts = false;
   const $ = (id) => document.getElementById(id);
   const localDay = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   const cleanText = (value, length) => typeof value === "string" ? value.trim().slice(0, length) : "";
-  const emptyState = () => ({ name: "", day: localDay(), goal: "", goalDone: false, tasks: [] });
+  const emptyState = () => ({ name: "", day: localDay(), goal: "", goalDone: false, tasks: [], shortcuts: [] });
   const timeFormat = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit" });
   const dateFormat = new Intl.DateTimeFormat("de-DE", { weekday: "long", day: "numeric", month: "long" });
   let timer;
 
   function announce(message) { $("status").textContent = message; }
+
+  function safeWebUrl(value) {
+    const raw = typeof value === "string" ? value.trim() : "";
+    if (!raw || raw.length > 2048 || /\s/.test(raw)) return null;
+    // Explicit schemes must be HTTP(S). Accept bare domains and localhost:port.
+    const candidate = /^(?:[a-z0-9.-]+):\d+(?:[/?#]|$)/i.test(raw) || !/^[a-z][a-z0-9+.-]*:/i.test(raw)
+      ? `https://${raw}` : raw;
+    try {
+      const url = new URL(candidate);
+      if (!["https:", "http:"].includes(url.protocol) || !url.hostname || url.username || url.password) return null;
+      return url.href;
+    } catch { return null; }
+  }
 
   function load() {
     try {
@@ -25,6 +40,9 @@
         day: today,
         goal: saved.day === today ? cleanText(saved.goal, 160) : "",
         goalDone: saved.day === today && saved.goalDone === true && Boolean(cleanText(saved.goal, 160)),
+        shortcuts: Array.isArray(saved.shortcuts) ? saved.shortcuts.slice(0, MAX_SHORTCUTS)
+          .filter((link) => link && cleanText(link.name, 32) && safeWebUrl(link.url))
+          .map((link) => ({ name: cleanText(link.name, 32), url: safeWebUrl(link.url) })) : [],
         tasks: Array.isArray(saved.tasks) ? saved.tasks.slice(0, MAX_TASKS)
           .filter((task) => task && cleanText(task.text, 160))
           .map((task) => ({ text: cleanText(task.text, 160), done: task.done === true })) : []
@@ -115,6 +133,89 @@
     $("task-form").querySelector("button").disabled = full;
   }
 
+  function renderShortcuts() {
+    const list = $("shortcut-list");
+    list.replaceChildren();
+    state.shortcuts.forEach((shortcut, index) => {
+      const item = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = shortcut.url;
+      link.referrerPolicy = "no-referrer";
+      link.rel = "noreferrer noopener";
+      link.title = `${shortcut.name} – ${shortcut.url}`;
+      const icon = document.createElement("span");
+      icon.className = "shortcut-icon";
+      icon.textContent = Array.from(shortcut.name)[0].toLocaleUpperCase("de-DE");
+      icon.setAttribute("aria-hidden", "true");
+      const label = document.createElement("span");
+      label.className = "shortcut-label";
+      label.textContent = shortcut.name;
+      link.append(icon, label);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "shortcut-remove";
+      remove.textContent = "×";
+      remove.hidden = !editingShortcuts;
+      remove.setAttribute("aria-label", `Verknüpfung löschen: ${shortcut.name}`);
+      remove.addEventListener("click", () => {
+        rollover();
+        state.shortcuts.splice(index, 1);
+        save("Verknüpfung gelöscht.");
+        renderShortcuts();
+        const next = list.children[Math.min(index, list.children.length - 1)];
+        (next ? next.querySelector("button") : $("add-shortcut")).focus();
+      });
+      item.append(link, remove);
+      list.append(item);
+    });
+    if (!state.shortcuts.length) editingShortcuts = false;
+    $("edit-shortcuts").hidden = !state.shortcuts.length;
+    $("edit-shortcuts").setAttribute("aria-pressed", String(editingShortcuts));
+    $("edit-shortcuts").textContent = editingShortcuts ? "Fertig" : "Bearbeiten";
+    $("add-shortcut").hidden = state.shortcuts.length >= MAX_SHORTCUTS;
+    $("shortcut-limit").hidden = state.shortcuts.length < MAX_SHORTCUTS;
+  }
+
+  $("edit-shortcuts").addEventListener("click", () => {
+    editingShortcuts = !editingShortcuts;
+    renderShortcuts();
+  });
+  $("add-shortcut").addEventListener("click", () => {
+    $("shortcut-form").reset();
+    $("shortcut-error").textContent = "";
+    $("shortcut-dialog").showModal();
+  });
+  $("cancel-shortcut").addEventListener("click", () => $("shortcut-dialog").close());
+  $("shortcut-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const name = cleanText($("shortcut-name").value, 32);
+    const url = safeWebUrl($("shortcut-url").value);
+    if (!name || !url) {
+      $("shortcut-error").textContent = "Bitte gib einen Namen und eine gültige http://- oder https://-Adresse ohne Leerzeichen oder Zugangsdaten ein.";
+      $("shortcut-url").focus();
+      return;
+    }
+    if (state.shortcuts.length >= MAX_SHORTCUTS) {
+      $("shortcut-error").textContent = "Deine Liste ist voll. Schließe dieses Fenster und lösche zuerst eine Verknüpfung.";
+      return;
+    }
+    rollover();
+    state.shortcuts.push({ name, url });
+    save("Verknüpfung gespeichert.");
+    renderShortcuts();
+    $("shortcut-dialog").close();
+    $("shortcut-list").lastElementChild.querySelector("a").focus();
+  });
+  document.addEventListener("click", (event) => {
+    if (!$("personalization").contains(event.target)) $("personalization").open = false;
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && $("personalization").open) {
+      $("personalization").open = false;
+      $("personalization").querySelector("summary").focus();
+    }
+  });
+
   function refresh() {
     clearTimeout(timer);
     if (document.hidden) return;
@@ -175,6 +276,7 @@
     $("name-input").value = state.name;
     renderGoal();
     renderTasks();
+    renderShortcuts();
     refresh();
   });
   document.addEventListener("visibilitychange", refresh);
@@ -184,5 +286,6 @@
   $("name-input").value = state.name;
   renderGoal();
   renderTasks();
+  renderShortcuts();
   refresh();
 })();
