@@ -49,7 +49,7 @@ Schließe alte Ruhe-Tabs. Lade das neue Paket mit derselben Add-on-ID `ruhe-tab@
 
 ## Quellcode und Prüfungen
 
-Im Ordner `ruhe-tab-firefox` liegt das eigenständige Firefox-Projekt. Die vorherige Firefox-Oberfläche wurde durch neue Module ersetzt. Der ältere Ordner `ruhe-tab` bleibt als frühere Chrome-Fassung erhalten.
+Im Ordner `ruhe-tab-firefox` liegt das eigenständige Firefox-Projekt. Die vorherige Firefox-Oberfläche wurde durch neue Module ersetzt. Der Ordner `ruhe-tab` enthält die getrennt gepflegte Chrome-Version.
 
 - `model.mjs`: Datenprüfung, Datum und Übernahme alter Daten.
 - `storage.mjs`: Firefox-Speicheradapter.
@@ -62,3 +62,14 @@ Im Ordner `ruhe-tab-firefox` liegt das eigenständige Firefox-Projekt. Die vorhe
 Die Logiktests, UI-Prüfung und Mozilla-Manifestprüfung waren erfolgreich. **Der native Firefox-Installationstest ist offen**, weil Firefox in der Ausführungsumgebung nicht vollständig startete. Alle Details stehen im Prüfbericht.
 
 MIT-Lizenz: [LICENSE.txt](ruhe-tab-firefox/LICENSE.txt).
+
+
+## Google Chrome – Hintergrund anpassen (Version 1.2.0)
+
+Die Chrome-Version liegt im Ordner **ruhe-tab**. [Projekt als ZIP herunterladen](https://github.com/C00Dexe/ruhe-tab/archive/refs/heads/main.zip).
+
+Unten links bleibt **Chrome anpassen** erreichbar. Damit öffnest du das eigene Anpassungsfeld von Ruhe Tab: drei lokale Farbverläufe oder ein eigenes JPG-, PNG- oder WebP-Bild bis 1 MB auswählen. Die Auswahl bleibt lokal gespeichert. ×, Escape oder ein Außenklick schließen das Feld. Der Text „Ein Moment für dich.“ wurde entfernt.
+
+Zum Aktualisieren alte Ruhe-Tabs schließen, die Dateien aus dem neuen Unterordner `ruhe-tab` in den **bisherigen Chrome-Installationsordner** kopieren und unter `chrome://extensions` bei Ruhe Tab auf ↻ klicken. Den Ordnerpfad nicht ändern und die Erweiterung nicht entfernen. So wird der bisherige lokale Speicher weiterverwendet.
+
+[Chrome-Anleitung](ruhe-tab/ANLEITUNG.md) · [Chrome-Prüfbericht](ruhe-tab/PRUEFBERICHT.md)
