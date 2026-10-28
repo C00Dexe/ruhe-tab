@@ -64,12 +64,14 @@ Die Logiktests, UI-Prüfung und Mozilla-Manifestprüfung waren erfolgreich. **De
 MIT-Lizenz: [LICENSE.txt](ruhe-tab-firefox/LICENSE.txt).
 
 
-## Google Chrome – Hintergrund anpassen (Version 1.2.0)
+## Google Chrome – Hintergrund anpassen (Version 1.3.0)
 
 Die Chrome-Version liegt im Ordner **ruhe-tab**. [Projekt als ZIP herunterladen](https://github.com/C00Dexe/ruhe-tab/archive/refs/heads/main.zip).
 
-Unten links bleibt **Chrome anpassen** erreichbar. Damit öffnest du das eigene Anpassungsfeld von Ruhe Tab: drei lokale Farbverläufe oder ein eigenes JPG-, PNG- oder WebP-Bild bis 1 MB auswählen. Die Auswahl bleibt lokal gespeichert. ×, Escape oder ein Außenklick schließen das Feld. Der Text „Ein Moment für dich.“ wurde entfernt.
+Unten links bleibt **Chrome anpassen** erreichbar. Damit öffnest du das eigene Anpassungsfeld von Ruhe Tab: drei lokale Farbverläufe oder ein eigenes JPG-, PNG- oder WebP-Bild bis 10 MB auswählen. Das Bild wird einmalig proportional auf höchstens 2560 × 1440 Pixel verkleinert, als WebP in IndexedDB gespeichert und beim späteren Öffnen direkt wiederverwendet. Kleine Bilder werden nicht vergrößert. Die Originaldatei bleibt unverändert. Die Auswahl bleibt ausschließlich lokal gespeichert. Vorhandene Bilddaten aus der älteren Chrome-Version werden nach Möglichkeit automatisch übernommen. ×, Escape oder ein Außenklick schließen das Feld. Der Text „Ein Moment für dich.“ wurde entfernt.
 
 Zum Aktualisieren alte Ruhe-Tabs schließen, die Dateien aus dem neuen Unterordner `ruhe-tab` in den **bisherigen Chrome-Installationsordner** kopieren und unter `chrome://extensions` bei Ruhe Tab auf ↻ klicken. Den Ordnerpfad nicht ändern und die Erweiterung nicht entfernen. So wird der bisherige lokale Speicher weiterverwendet.
 
 [Chrome-Anleitung](ruhe-tab/ANLEITUNG.md) · [Chrome-Prüfbericht](ruhe-tab/PRUEFBERICHT.md)
+
+Automatisierte Browserprüfung für die Chrome-Hintergründe: `tests/chrome-backgrounds.cjs` (Playwright und Chromium). Diese prüft echte IndexedDB-Speicherung, Größenanpassung, Übernahme alter Bilddaten, Neuladen, Abgleich zwischen Tabs und Fehlerfälle.
