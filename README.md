@@ -1,8 +1,21 @@
 # Ruhe Tab
 
-Eine dunkle, minimalistische Chrome-Erweiterung für neue Tabs: Uhrzeit, persönliche Begrüßung, Tagesziel eine kleine Aufgabenliste und eigene Webseiten-Verknüpfungen. Alle enthaltenen Funktionen sind ohne Konto oder Abo nutzbar. Die Daten bleiben lokal im Browserprofil.
+Eine dunkle, minimalistische Erweiterung für Chrome und Firefox (Desktop) für neue Tabs: Uhrzeit, persönliche Begrüßung, Tagesziel eine kleine Aufgabenliste und eigene Webseiten-Verknüpfungen. Alle enthaltenen Funktionen sind ohne Konto oder Abo nutzbar. Die Daten bleiben lokal im Browserprofil.
 
-## Herunterladen und installieren
+## Firefox
+
+Der Ordner **ruhe-tab-firefox** enthält die Firefox-Version (ab Firefox 140) mit denselben Funktionen wie die Chrome-Version 1.1.0.
+
+1. **Code → Download ZIP** wählen und die ZIP entpacken.
+2. In Firefox `about:debugging#/runtime/this-firefox` öffnen.
+3. **Temporäres Add-on laden…** anklicken und `ruhe-tab-firefox/manifest.json` auswählen.
+4. Mit Strg+T bzw. Cmd+T einen neuen Tab öffnen.
+
+**Die temporäre Installation endet beim Neustart von Firefox.** Für die dauerhafte Installation im normalen Firefox muss das Paket von Mozilla signiert werden; diese Entwicklungsversion ist noch nicht signiert. Chrome-Daten werden nicht automatisch übertragen.
+
+Die [Firefox-Anleitung](ruhe-tab-firefox/ANLEITUNG.md) erklärt Bedienung, Datenschutz und den Weg zu einem dauerhaft installierbaren, signierten Paket. Die [Firefox-Prüfergebnisse](ruhe-tab-firefox/PRUEFBERICHT.md) nennen die durchgeführten Tests.
+
+## Chrome: Herunterladen und installieren
 
 1. Melde dich bei GitHub an und öffne dieses Repository.
 2. Klicke oberhalb der Dateiliste auf die grüne Schaltfläche **Code**.
