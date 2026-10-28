@@ -1,57 +1,47 @@
-# Ruhe Tab für Firefox (Desktop, ab Version 140)
+# Ruhe Tab 2 für Firefox
 
-Uhrzeit, Begrüßung, Tagesziel, Aufgabenliste, zwölf eigene Webseiten-Verknüpfungen und kompakte aufklappbare Einstellungen. Die mitgelieferten HTML-, CSS- und JavaScript-Dateien entsprechen der Chrome-Version 1.1.0. Lediglich das Manifest ist für Firefox ergänzt.
+## Installation
 
-## Herunterladen und vorübergehend installieren
+Lade [die XPI](../downloads/ruhe-tab-firefox-2.0.0.xpi?raw=true) herunter. In diesem privaten Repository musst du bei GitHub angemeldet sein. Falls nötig, öffne die Datei auf GitHub und klicke auf das Download-Symbol („Download raw file“). Alternativ **Code → Download ZIP**, entpacken und die XPI im Ordner `downloads` verwenden.
 
-1. Melde dich bei GitHub an und lade im Repository über **Code → Download ZIP** die aktuelle ZIP-Datei herunter.
-2. Entpacke `ruhe-tab-main.zip`.
-3. Öffne Firefox und gib `about:debugging#/runtime/this-firefox` in die Adressleiste ein.
-4. Klicke auf **Temporäres Add-on laden…** (je nach Sprache „Load Temporary Add-on“).
-5. Wähle im entpackten Ordner `ruhe-tab-main` den Unterordner **ruhe-tab-firefox** und darin **manifest.json** aus.
-6. Öffne mit Strg+T (Mac: Cmd+T) einen neuen Tab. Falls Firefox nachfragt, bestätige, dass Ruhe Tab deine neue Tab-Seite bleiben soll.
+**Zum Testen in Firefox:** `about:debugging#/runtime/this-firefox` öffnen, „Temporäres Add-on laden…“ anklicken, XPI auswählen und einen neuen Tab öffnen. Ohne XPI funktioniert auch `ruhe-tab-firefox/manifest.json` aus dem entpackten Repository. Diese temporäre Installation endet beim Neustart.
 
-Wähle für Firefox den Ordner `ruhe-tab-firefox`; der Ordner `ruhe-tab` enthält die Chrome-Version. Andere Erweiterungen für neue Tabs können die Auswahl beeinflussen. Eine Organisation kann eigene Add-ons über Browserrichtlinien verhindern.
+**Dauerhaft unsigniert in Developer Edition/Nightly/geeignetem ESR:** In `about:config` `xpinstall.signatures.required` auf `false` setzen. In `about:addons` über das Zahnrad „Add-on aus Datei installieren…“ wählen und die XPI öffnen. Die Signaturpflicht wird damit für alle Add-ons dieses Entwicklerprofils abgeschaltet. Die feste Add-on-ID ist im Manifest enthalten. Die Installation bleibt über Neustarts erhalten.
 
-**Diese Installation endet beim Neustart von Firefox.** Danach musst du die Schritte 3–5 wiederholen. Behandle diesen Entwicklungsmodus nicht als dauerhafte Installation oder verlässliche Datensicherung. Daten können beim Entladen oder Entfernen verloren gehen. Die feste Add-on-ID hilft bei der Identifikation, ersetzt aber keine Signierung.
+Der normale Firefox-Release unterstützt temporäres Laden, verlangt für dauerhafte Add-ons aber eine Mozilla-Signatur. Die enthaltene XPI ist unsigniert. Das Projekt wurde nicht bei Mozilla eingereicht. Für eine Signierung zur eigenen Verteilung kann dieselbe XPI beim [Mozilla Developer Hub](https://addons.mozilla.org/developers/) als nicht gelistetes Add-on eingereicht werden.
 
-## Dauerhafte Installation
-
-Der normale Firefox verlangt für dauerhaft installierte Add-ons eine Mozilla-Signatur. Das Repository enthält zunächst eine **unsignierte Entwicklungsversion**, keine installierbare signierte XPI. Eine ZIP lediglich in `.xpi` umzubenennen ersetzt keine Signierung.
-
-Für eine dauerhafte private Verteilung:
-
-1. Erstelle ein kostenloses Entwicklerkonto auf https://addons.mozilla.org/developers/.
-2. Packe die Dateien **innerhalb** von `ruhe-tab-firefox` als ZIP. Im Archiv muss `manifest.json` direkt auf oberster Ebene liegen, ohne umgebenden Ordner.
-3. Reiche dieses Paket im Mozilla-Entwicklerportal für die eigene Verteilung („On your own“ / nicht gelistet) ein. Für die Datenschutzerklärung kannst du die Angaben weiter unten verwenden; beantworte die Portalfragen entsprechend dem tatsächlichen Code.
-4. Nach erfolgreicher Prüfung/Signierung erhältst du eine signierte `.xpi`. Öffne in Firefox `about:addons`, klicke auf das Zahnrad und wähle „Add-on aus Datei installieren…“.
-
-Es wurde nichts bei Mozilla eingereicht oder veröffentlicht. Die Signierung wird vom Mozilla-Konto des Eigentümers durchgeführt; ihre Freigabe kann nicht im Voraus garantiert werden. Der laufende Erweiterungscode benötigt anschließend keinen eigenen Server.
+Firefox Desktop ab Version 140 ist vorgesehen. Firefox für Android wird nicht als Neue-Tab-Ersatz unterstützt. Eine von einer Organisation verwaltete Installation kann zusätzliche Regeln haben.
 
 ## Verwendung
 
-- **Einstellungen** unten links öffnet das Feld für deinen Namen. Ein leerer gespeicherter Name entfernt ihn. Erneuter Klick, Außenklick oder Escape klappt das Feld zu.
-- Tagesziel eingeben und mit Enter oder ↵ speichern. Das Kästchen markiert es als erledigt. Beim lokalen Tageswechsel wird das Ziel geleert.
-- Aufgaben mit Enter oder + hinzufügen, abhaken und mit × löschen. Maximal 50 Aufgaben; sie bleiben über Tageswechsel erhalten.
-- Unter **Deine Webseiten → + Verknüpfung hinzufügen** Namen und HTTP(S)-Adresse speichern. Fehlendes `https://` wird ergänzt. Eine Kachel öffnet die Seite im selben Tab; **Bearbeiten → ×** entfernt sie. Maximal zwölf Verknüpfungen.
-- Es gibt keinen automatischen Chrome-Import oder Austausch zwischen Browserprofilen. Daten aus Chrome werden nicht übertragen.
+Uhrzeit und Datum verwenden die lokale Rechnerzeit im deutschen 24-Stunden-Format. Unter „Einstellungen“ unten links speicherst du einen Namen. Leeres Speichern entfernt ihn. Das kleine Feld klappt per erneutem Klick, Außenklick oder Escape zu.
 
-## Datenschutz und Technik
+Das Tagesziel wird mit Enter oder ↵ gespeichert, per Kästchen erledigt und beim nächsten lokalen Tageswechsel nicht mehr angezeigt. Für eine Änderung Text bearbeiten und erneut speichern; ein leerer Text entfernt das Ziel. Aufgaben bleiben über Tageswechsel erhalten. Du kannst bis zu 50 Aufgaben hinzufügen, abhaken und mit × löschen.
 
-Alle Eingaben werden unter `ruhe-tab-v1` in `localStorage` des Firefox-Erweiterungsprofils gespeichert. Keine Synchronisierung, Konten, Analyse, Werbung, externen Schriftarten oder Bilder. Verknüpfungen erhalten lokal erzeugte Buchstaben-Symbole. Erst beim Anklicken einer Kachel öffnet Firefox die gewählte Webseite und lädt deren Inhalte.
+Über „+ Verknüpfung hinzufügen“ speicherst du bis zu zwölf Webseiten. Ohne Schema wird `https://` ergänzt. Unterstützt sind HTTP und HTTPS ohne eingebettete Zugangsdaten. Eine Kachel öffnet die Webseite im selben Tab. Unter „Bearbeiten“ erscheinen die ×-Schaltflächen zum Löschen. Es gibt keinen Zugriff auf deine vorhandenen Firefox-Lesezeichen oder meistbesuchten Seiten.
 
-Das Manifest fordert keine zusätzlichen API- oder Webseitenberechtigungen an. Es gibt keinen Zugriff auf den Verlauf oder die Firefox-Lesezeichen und keinen Hintergrundprozess. Eine strenge Sicherheitsrichtlinie blockiert externe Verbindungen aus der Erweiterungsseite. `data_collection_permissions.required: ["none"]` erklärt Firefox, dass die Erweiterung keine Daten sammelt oder überträgt. Die Uhr läuft nur bei sichtbarer Seite einmal pro Minute.
+## Speicher und Datenschutz
 
-Der Speicher enthält Klartext und keine verschlüsselte Sicherung. Er ist ungeeignet für Geheimnisse. Entfernen der Erweiterung oder des Profils kann Daten löschen.
+Name, Ziel, Aufgaben und Links liegen ausschließlich in `browser.storage.local` im Firefox-Profil. Die Berechtigung „storage“ ist dafür nötig. Kein `storage.sync`, keine Server, Konten, Onlinebilder, Schrift-Downloads, Analysewerkzeuge oder Hintergrundprozesse. Die Uhr stellt bei verborgenem Tab ihren Timer ein.
 
-## Aktualisieren und testen
+Beim Anzeigen und Bearbeiten werden keine Webseiten kontaktiert. Erst wenn du auf eine Kachel klickst, öffnet Firefox deren Adresse und lädt die gewählte Webseite. Diese Webseiten und Firefox selbst haben ihr eigenes Netzwerkverhalten.
 
-Ersetze die Dateien im gleichen Firefox-Ordner, schließe alte Ruhe-Tabs und klicke auf der Add-on-Karte unter `about:debugging` auf „Neu laden“. Eine dauerhaft signierte Installation wird mit einem neuen signierten Paket derselben Add-on-ID aktualisiert; es ist kein automatischer Update-Dienst eingerichtet.
+Die Daten sind nicht verschlüsselt. Es gibt keine automatische Sicherung. Die Deinstallation oder das Löschen des Firefox-Profils kann sie entfernen; auch temporäre Add-ons eignen sich nicht als dauerhafte Datenablage.
 
-Prüfe Uhrzeit, Name, Tagesziel und Aufgaben. Lade den Tab neu: Eingaben sollen noch vorhanden sein. Lege eine Webseiten-Verknüpfung an und teste sie. Trenne zum Prüfen der lokalen Bedienung die Internetverbindung: Die neue Tab-Seite und Eingaben funktionieren weiter, externe Webseiten lassen sich ohne Netz natürlich nicht laden.
+Wenn du im selben Firefox-Profil auf Version 2 aktualisierst, werden noch vorhandene lokale Daten der alten Firefox-Version beim ersten Start übernommen. Dafür bleibt die ID `ruhe-tab@c00dexe` erhalten. Der alte Speicher wird nicht gelöscht. Chrome-Daten werden nicht übertragen.
 
-## Mozilla-Dokumentation
+## Eigener Funktionstest
 
-- Temporäre Installation: https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/
-- Signierung und Verteilung: https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/
-- Browserkonfiguration: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_specific_settings
+1. Öffne einen neuen Tab und prüfe Datum und Uhrzeit.
+2. Speichere einen Namen und ein Tagesziel; füge eine Aufgabe und eine Webseiten-Verknüpfung hinzu.
+3. Lade den Tab neu. Die Daten sollen weiterhin angezeigt werden.
+4. Öffne einen zweiten Tab und ändere eine Aufgabe. Die Änderung soll im ersten Tab erscheinen, ohne einen dort noch nicht gespeicherten Zielentwurf zu löschen.
+5. Klappe die Einstellungen auf und zu. Die Hauptinhalte sollen an ihrer Position bleiben.
+6. Trenne das Netz: Aufgaben und Verknüpfungen lassen sich weiterhin speichern. Externe Webseiten brauchen zum Öffnen natürlich eine Verbindung.
+7. Bei dauerhafter Installation: Starte Firefox neu und prüfe Add-on und Daten erneut. Bei temporärer Installation musst du das Add-on erneut laden.
+
+## Änderungen am Code
+
+HTML, CSS und JavaScript-Module sind direkt lesbar und benötigen zum Ausführen keine Zusatzprogramme. Unter `about:debugging` kannst du eine temporäre Installation nach Änderungen neu laden. Mit `python3 tools/package-firefox.py` im Projektordner entsteht aus den aktuellen Dateien eine neue XPI. Ein neues Paket installierst du mit derselben ID als Aktualisierung; für eine signierte Installation muss auch das Update signiert sein.
+
+Dokumentation: [Temporäre Installation](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/), [Signierung und Entwickler-Versionen](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/).

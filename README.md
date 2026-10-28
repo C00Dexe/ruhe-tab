@@ -1,61 +1,64 @@
-# Ruhe Tab
+# Ruhe Tab 2 – für Firefox neu entwickelt
 
-Eine dunkle, minimalistische Erweiterung für Chrome und Firefox (Desktop) für neue Tabs: Uhrzeit, persönliche Begrüßung, Tagesziel eine kleine Aufgabenliste und eigene Webseiten-Verknüpfungen. Alle enthaltenen Funktionen sind ohne Konto oder Abo nutzbar. Die Daten bleiben lokal im Browserprofil.
+Eine kleine, lokale Neue-Tab-Erweiterung für Firefox Desktop ab Version 140. Dunkles Design, Uhrzeit, persönliche Begrüßung, Tagesziel, Aufgabenliste und eigene Webseiten-Verknüpfungen. Keine Konten, Abos, Werbung, Analysewerkzeuge oder extern geladenen Inhalte.
 
-## Firefox
+**[Firefox-XPI herunterladen](downloads/ruhe-tab-firefox-2.0.0.xpi?raw=true)** · [Anleitung](ruhe-tab-firefox/ANLEITUNG.md) · [Prüfbericht](ruhe-tab-firefox/PRUEFBERICHT.md)
 
-Der Ordner **ruhe-tab-firefox** enthält die Firefox-Version (ab Firefox 140) mit denselben Funktionen wie die Chrome-Version 1.1.0.
+Bei diesem privaten Repository musst du zum Herunterladen bei GitHub angemeldet sein. Falls GitHub die Dateiansicht statt des Downloads zeigt, klicke dort auf das Download-Symbol („Download raw file“). Alternativ **Code → Download ZIP** wählen: Die XPI liegt im entpackten Ordner unter `downloads`.
 
-1. **Code → Download ZIP** wählen und die ZIP entpacken.
-2. In Firefox `about:debugging#/runtime/this-firefox` öffnen.
-3. **Temporäres Add-on laden…** anklicken und `ruhe-tab-firefox/manifest.json` auswählen.
-4. Mit Strg+T bzw. Cmd+T einen neuen Tab öffnen.
+## Direkt unsigniert ausprobieren
 
-**Die temporäre Installation endet beim Neustart von Firefox.** Für die dauerhafte Installation im normalen Firefox muss das Paket von Mozilla signiert werden; diese Entwicklungsversion ist noch nicht signiert. Chrome-Daten werden nicht automatisch übertragen.
+1. In Firefox `about:debugging#/runtime/this-firefox` öffnen.
+2. **Temporäres Add-on laden…** anklicken und die heruntergeladene **XPI-Datei** auswählen.
+3. Einen neuen Tab öffnen und eine eventuelle Rückfrage zum Beibehalten der neuen Tab-Seite bestätigen.
 
-Die [Firefox-Anleitung](ruhe-tab-firefox/ANLEITUNG.md) erklärt Bedienung, Datenschutz und den Weg zu einem dauerhaft installierbaren, signierten Paket. Die [Firefox-Prüfergebnisse](ruhe-tab-firefox/PRUEFBERICHT.md) nennen die durchgeführten Tests.
+Das funktioniert ohne Mozilla-Signatur und endet mit dem Firefox-Neustart. Alternativ kannst du im entpackten Projekt `ruhe-tab-firefox/manifest.json` auswählen.
 
-## Chrome: Herunterladen und installieren
+## In der Firefox Developer Edition installieren
 
-1. Melde dich bei GitHub an und öffne dieses Repository.
-2. Klicke oberhalb der Dateiliste auf die grüne Schaltfläche **Code**.
-3. Wähle **Download ZIP** und entpacke die heruntergeladene Datei.
-4. Öffne in Chrome die Adresse `chrome://extensions`.
-5. Schalte oben rechts **Entwicklermodus** ein.
-6. Klicke auf **Entpackte Erweiterung laden**.
-7. Wähle im entpackten Ordner `ruhe-tab-main` den **Unterordner `ruhe-tab`** aus. Darin liegt die Datei `manifest.json`.
-8. Öffne einen neuen Tab. Falls Chrome nachfragt, bestätige, dass du die neue Tab-Seite behalten möchtest.
+In Developer Edition, Nightly und den dafür vorgesehenen ESR-Versionen ist auch eine Installation unsignierter Dateien über den Add-on-Manager möglich:
 
-Der ausgewählte Ordner muss anschließend an seinem Speicherort bleiben. Eine andere Erweiterung, die ebenfalls neue Tabs ersetzt, solltest du zum Testen deaktivieren. Du brauchst keinen Server und keine zusätzlichen Programme.
+1. In diesem Entwicklerprofil `about:config` öffnen.
+2. `xpinstall.signatures.required` suchen und auf **false** setzen. Das schaltet die Signaturpflicht für alle Erweiterungen in diesem Profil aus; verwende dort eigene bzw. vertrauenswürdige Pakete.
+3. `about:addons` öffnen, auf das Zahnrad klicken und **Add-on aus Datei installieren…** wählen.
+4. `ruhe-tab-firefox-2.0.0.xpi` auswählen und die Installation bestätigen.
+5. Einen neuen Tab öffnen.
 
-## Von einer älteren Version aktualisieren
+Diese Installation ist im Gegensatz zum temporären Laden nicht auf die laufende Sitzung begrenzt. Eine feste Erweiterungs-ID ist enthalten. Für den normalen Firefox-Release ist für die dauerhafte Installation eine Mozilla-Signierung nötig. Es wurde nichts bei Mozilla veröffentlicht oder signiert.
 
-1. Lade die aktuelle ZIP-Datei herunter und entpacke sie zunächst in einen separaten Ordner.
-2. Schließe geöffnete Ruhe-Tab-Seiten, damit sie nicht mit dem alten Code weiterschreiben.
-3. Kopiere den Inhalt des neuen Unterordners `ruhe-tab` in den **bisher in Chrome geladenen Ordner** und ersetze dort die Dateien. Den bisherigen Ordner weder umbenennen noch verschieben.
-4. Öffne `chrome://extensions` und klicke bei Ruhe Tab auf das **Neuladen-Symbol ↻**.
-5. Öffne einen neuen Tab. Version 1.1.0 verwendet denselben lokalen Speicher wie Version 1.0.0.
+Quelle: [Mozillas Anleitung zu unsignierten Erweiterungen](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/).
 
-Die Erweiterung dafür nicht entfernen und neu installieren. Bei unverändertem Installationspfad bleiben Name und Aufgaben beim Aktualisieren erhalten.
+## Bedienung
 
-## Verwendung
+- **Einstellungen** unten links öffnet ein kleines Namensfeld. Erneuter Klick, Außenklick oder Escape schließt es. Der Seiteninhalt wird dabei nicht verschoben.
+- Tagesziel eingeben und mit Enter speichern. Das Kästchen markiert es als erledigt. Ein neuer lokaler Tag zeigt ein leeres Tagesziel.
+- Aufgaben mit Enter oder + hinzufügen, abhaken und mit × löschen. Bis zu 50 Aufgaben.
+- Über **+ Verknüpfung hinzufügen** Namen und HTTP(S)-Adresse einer Webseite speichern. Die Kachel öffnet sie im selben Tab. **Bearbeiten → ×** löscht sie. Bis zu zwölf Verknüpfungen.
 
-- **Einstellungen** unten links öffnet ein kleines, aufklappbares Feld für die persönliche Begrüßung. Es schließt per erneutem Klick, Außenklick oder Escape.
-- Tagesziel eingeben und mit Enter speichern; per Kästchen als erledigt markieren.
-- Aufgaben mit Enter oder **+** hinzufügen, abhaken und mit **×** löschen.
-- Unter **Deine Webseiten → + Verknüpfung hinzufügen** speicherst du Name und Adresse einer Webseite. Ein Klick auf die Kachel öffnet sie im selben Tab. **Bearbeiten → ×** entfernt eine Verknüpfung. Maximal zwölf Einträge.
-- Das Tagesziel wird beim lokalen Tageswechsel zurückgesetzt; Aufgaben bleiben erhalten.
+## Firefox als Grundlage
 
-Die [ausführliche Anleitung](ruhe-tab/ANLEITUNG.md) beschreibt Installation, Bedienung und lokale Speicherung.
+Version 2 wurde neu geschrieben und verwendet direkt `browser.storage.local` und `browser.storage.onChanged`. Einzelne Aufgaben und Verknüpfungen haben eigene Speicherschlüssel. Eingaben in einem Feld bleiben erhalten, wenn ein anderer Tab eine andere Aufgabe ändert.
 
-## Datenschutz und Technik
+Die einzige API-Berechtigung heißt `storage`. Die Erweiterung liest weder Verlauf noch Firefox-Lesezeichen. Webseiten-Kacheln legst du selbst an. Die Symbole entstehen lokal aus Buchstaben; erst beim Öffnen einer Kachel kontaktiert Firefox die gewählte Webseite. Keine Synchronisierung mit Servern oder anderen Browsern.
 
-HTML, CSS und JavaScript ohne zusätzliche Bibliotheken. Keine externen Bilder oder Schriften, Analysewerkzeuge, Konten, Netzwerkverbindungen oder Hintergrundprozesse. Keine zusätzlichen Chrome-Berechtigungen. Die Verknüpfungen werden manuell angelegt; die Chrome-Lesezeichen und der Verlauf werden nicht ausgelesen. Es werden keine Webseiten-Logos, Vorschaubilder oder Verbindungen vorab geladen. Erst wenn du eine Verknüpfung anklickst, öffnet Chrome die gewählte Webseite mit den üblichen Verbindungen dieser Webseite. Name, Ziel, Aufgaben und Verknüpfungen werden lokal in `localStorage` gespeichert. Die Uhr aktualisiert sich bei sichtbarer Seite zur nächsten vollen Minute.
+Kein Framework, kein Build-Schritt zum Starten, kein Hintergrundskript oder Service Worker. Nur ein Timer bis zur nächsten Minute bei sichtbarer Seite. Die strenge Sicherheitsrichtlinie blockiert externe Verbindungen aus der Erweiterungsseite.
 
-## Geprüft und noch zu prüfen
+## Aktualisieren von der alten Firefox-Version
 
-Die Bedienung, Speicherung, der Tageswechsel und Offline-Bedienung wurden in Chromium getestet. Es wurden keine externen Anfragen bei normaler Bedienung beobachtet. Das tatsächliche Installieren als Erweiterung und Ersetzen der neuen Tab-Seite konnte in der verwalteten Testumgebung wegen ihrer Installationsrichtlinie nicht getestet werden.
+Schließe alte Ruhe-Tabs. Lade das neue Paket mit derselben Add-on-ID `ruhe-tab@c00dexe` im gleichen Firefox-Profil. Die Firefox-interne ID bleibt gleich. Noch vorhandene alte Seitendaten aus Version 1 werden einmalig in den Firefox-Erweiterungsspeicher übernommen und nicht gelöscht. Es gibt keinen automatischen Import aus Chrome. Bei einer temporären Installation kann das Entladen Daten löschen; eine verlässliche Sicherung wird dadurch nicht ersetzt.
 
-Details stehen im [Prüfbericht](ruhe-tab/PRUEFBERICHT.md). Bitte führe nach der Installation den kurzen Test aus der Anleitung durch.
+## Quellcode und Prüfungen
 
-Der Quellcode steht unter der [MIT-Lizenz](ruhe-tab/LICENSE.txt).
+Im Ordner `ruhe-tab-firefox` liegt das eigenständige Firefox-Projekt. Die vorherige Firefox-Oberfläche wurde durch neue Module ersetzt. Der ältere Ordner `ruhe-tab` bleibt als frühere Chrome-Fassung erhalten.
+
+- `model.mjs`: Datenprüfung, Datum und Übernahme alter Daten.
+- `storage.mjs`: Firefox-Speicheradapter.
+- `app.mjs`: Oberfläche und Bedienung.
+- `index.html`, `style.css`, `manifest.json`: Seitenstruktur, Gestaltung und Firefox-Konfiguration.
+- `tests/model.test.mjs`: sieben automatisierte Logik- und Speichertests, ausführen mit `node tests/model.test.mjs`.
+- `tests/ui.cjs`: UI-Prüfung in Chromium mit ausdrücklich simuliertem Firefox-Speicher; benötigt Playwright und Chromium. Kein Ersatz für einen Firefox-Installationstest.
+- `tools/package-firefox.py`: erzeugt die XPI mit Python 3 ohne zusätzliche Pakete. Ausführen mit `python3 tools/package-firefox.py`.
+
+Die Logiktests, UI-Prüfung und Mozilla-Manifestprüfung waren erfolgreich. **Der native Firefox-Installationstest ist offen**, weil Firefox in der Ausführungsumgebung nicht vollständig startete. Alle Details stehen im Prüfbericht.
+
+MIT-Lizenz: [LICENSE.txt](ruhe-tab-firefox/LICENSE.txt).

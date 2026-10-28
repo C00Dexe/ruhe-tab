@@ -1,37 +1,33 @@
-# Firefox-Prüfbericht – 28.10.2026
+# Ruhe Tab 2 – Prüfbericht vom 28.10.2026
 
-## Firefox-Konfiguration
+## Quellcode und Paket
 
-Geprüft mit Mozillas `web-ext lint` 10.8.0: **0 Fehler, 0 Hinweise, 1 Warnung**.
+- Drei neue JavaScript-Module mit `node --check` erfolgreich geprüft.
+- Mozilla `web-ext lint` 10.8.0: **0 Fehler, 0 Warnungen, 0 Hinweise**.
+- XPI als ZIP geprüft: Manifest direkt an der Archivwurzel, alle sieben benötigten Dateien vorhanden, keine defekten Archiveinträge.
+- Alle sieben Archivdateien byteweise mit den aktuellen Quelldateien verglichen.
+- Die XPI ist unsigniert. Sie ist für temporäres Laden und Entwickler-Installationen vorbereitet; es wurde keine Signierung oder Veröffentlichung bei Mozilla durchgeführt.
 
-Die Warnung `KEY_FIREFOX_ANDROID_UNSUPPORTED_BY_MIN_VERSION` betrifft die Datenschutzangabe auf älteren Firefox-Android-Versionen. Diese Variante ist für Firefox Desktop ab Version 140 vorgesehen; ein Android-Neue-Tab-Ersatz wird nicht unterstützt oder versprochen.
+## Sieben automatisierte Logik- und Speichertests
 
-Das Manifest verwendet Manifest V3, die feste ID `ruhe-tab@c00dexe`, `chrome_url_overrides.newtab` und `data_collection_permissions.required: ["none"]`. Keine zusätzlichen API- oder Hostberechtigungen, keine Hintergrundprozesse. JavaScript-Syntaxprüfung mit `node --check` erfolgreich.
+Ausgeführt mit `node tests/model.test.mjs`: **7 erfolgreich, 0 fehlgeschlagen**.
 
-HTML, CSS und JavaScript sind bytegleich mit der Chrome-Version 1.1.0. Es wurden ausschließlich die Firefox-Konfiguration sowie eigene Dokumentation ergänzt.
+Geprüft wurden lokales Datum/Tageswechsel, gültige und ungültige Webseiten-Adressen, einmalige Übernahme der alten Daten, Schutz beschädigter Altdaten, unabhängige Aufgabenänderungen aus zwei Tabs, Weitergabe von Speicherfehlern sowie Validierung von Schlüsseln und Dateneinträgen. Die Speicheroperationen verwenden dabei einen injizierten Testadapter mit derselben Methodenoberfläche wie `browser.storage.local`.
 
-## Bedienprüfungen der Firefox-Dateien in Chromium
+## Integration der Oberfläche
 
-Die mitgelieferten Dateien wurden mit Playwright in Chromium 154 über einen lokalen Testserver geprüft. Dieser verwendete die Sicherheitsrichtlinie aus dem Firefox-Manifest. Der Testserver wird für die Benutzung der Erweiterung nicht benötigt.
+Ausgeführt mit Playwright und Chromium 154. Die Originaldateien liefen auf einem lokalen Testserver mit der Sicherheitsrichtlinie aus dem Manifest. Ausschließlich im Test wurde `browser.storage.local` durch einen Testadapter ersetzt; die ausgelieferte Erweiterung enthält diesen Adapter nicht.
 
-- Erfolgreich: Originale HTML/CSS/JS-Dateien in Chromium mit der Manifest-Sicherheitsrichtlinie geprüft; Uhrzeit und Datum angezeigt.
-- Erfolgreich: Name, Tagesziel und Aufgaben einschließlich Erledigt-Status überstehen Neuladen.
-- Erfolgreich: Bestehende Daten aus Version 1.0 bleiben erhalten; Einstellungen öffnen ohne Layoutverschiebung und schließen per Escape oder Außenklick.
-- Erfolgreich: Webseiten hinzufügen, öffnen (abgefangenes Testziel), löschen, offline speichern, nach Neuladen und in anderem Tab anzeigen; maximal zwölf Einträge.
-- Erfolgreich: Unsichere URL-Schemata, Zugangsdaten und Leerzeichen abgewiesen; fehlendes HTTPS ergänzt; HTML-Namen als Text angezeigt. Keine Logos oder Vorschauen geladen.
-- Erfolgreich: Änderungen werden zwischen geöffneten Tabs abgeglichen.
-- Erfolgreich: Aufgaben hinzufügen, abhaken und löschen; HTML-Eingaben bleiben harmloser Text.
-- Erfolgreich: Tageswechsel: Ziel wird zurückgesetzt; Aufgaben bleiben erhalten.
-- Erfolgreich: Beschädigte gespeicherte Daten werden abgefangen; erneutes Speichern funktioniert.
-- Erfolgreich: Grenze von 50 Aufgaben wird eingehalten; Löschen gibt wieder Platz frei.
-- Erfolgreich: Schmale Ansicht (390 px) ohne horizontalen Überlauf.
-- Erfolgreich: Aufgaben lassen sich auch offline hinzufügen und speichern.
-- Erfolgreich: Keine externen Netzwerkanfragen während der normalen Bedienung.
-- Erfolgreich: Sicherheitsrichtlinie blockiert einen absichtlich getesteten externen Fetch.
-- Erfolgreich: Keine Berechtigungen, Hostfreigaben oder Hintergrundprozesse im Manifest; keine JavaScript-Laufzeitfehler.
+Geprüft: Uhranzeige, Namensspeicherung, Tagesziel und Erledigt-Status, Aufgaben hinzufügen/abhaken/löschen, Webseiten-Verknüpfungen hinzufügen/löschen, URL-Validierung im Dialog, Speicherung über Neuladen, Änderungen in zwei Tabs, Erhalt eines ungespeicherten Zielentwurfs bei einer Änderung aus einem anderen Tab, Offline-Bedienung und Darstellung bei 390 Pixeln Fensterbreite. Während der normalen Bedienung wurden keine externen Anfragen und keine unbehandelten JavaScript-Fehler beobachtet. Desktopansicht und schmale Ansicht zusätzlich visuell geprüft.
 
-## Noch offener Firefox-Installationstest
+Zusätzlich getestet: Grenzen von 50 Aufgaben und zwölf Verknüpfungen; Löschen gibt Platz frei. Escape schließt die Einstellungen. Ein simulierter fehlgeschlagener Speichervorgang wird sichtbar gemeldet und behält die nicht gespeicherte Eingabe bei.
 
-Ein Test mit Firefox ESR 140.16.0 und geckodriver 0.36.0 wurde versucht. Firefox startete in der eingeschränkten Ausführungsumgebung nicht vollständig: Grafik-/Framebuffer- und Sandbox-Initialisierung schlugen fehl; die Automatisierung erreichte keine Browsersitzung. Das Add-on wurde in diesem Versuch daher noch nicht geladen.
+## Offener nativer Firefox-Test
 
-**Das tatsächliche Laden in Firefox, die Firefox-Speicherung und das Ersetzen der neuen Tab-Seite sind hier nicht als erfolgreich getestet bestätigt.** Bitte führe die Installation und den kurzen Funktionstest aus der Firefox-Anleitung auf deinem Rechner durch. Eine Mozilla-Signierung oder Veröffentlichung fand nicht statt.
+Der erneute Versuch mit Firefox ESR 140.16.0 und geckodriver 0.36.0 erreichte in dieser eingeschränkten Umgebung keine vollständig gestartete Browsersitzung. Dieser Versuch hat das Add-on noch nicht geladen. Die erfolgreiche Prüfung des Manifests und die Integrationstests ersetzen daher **keinen bestätigten nativen Firefox-Installationstest**.
+
+Noch am eigenen Rechner zu prüfen: tatsächliches Laden der XPI, Firefox-Speicherberechtigung, Ersetzen der neuen Tab-Seite, Firefox-Speicherung und Verhalten über einen Neustart bei einer dauerhaften Entwickler-Installation. Die Anleitung enthält dafür einen kurzen Ablauf.
+
+## Prüfsumme der bereitgestellten XPI
+
+SHA-256: `a6f911d33da3433fb93f384bb0198d18cb04162e2e7cc95b607d1984967c244d`

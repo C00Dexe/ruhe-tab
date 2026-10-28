@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Ruhe Tab</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+  <header><span class="brand"><span aria-hidden="true">◒</span> RUHE TAB</span><span class="quiet">Dein Raum. Dein Rhythmus.</span></header>
+  <main id="content" inert>
+    <section class="today" aria-label="Dein Tag">
+      <p id="date" class="eyebrow"></p>
+      <time id="clock" aria-label="Aktuelle Uhrzeit">--:--</time>
+      <h1 id="greeting">Willkommen.</h1>
+      <p class="muted">Ein ruhiger Anfang für das, was dir wichtig ist.</p>
+      <section class="goal" aria-labelledby="goal-title">
+        <h2 id="goal-title" class="eyebrow">DEIN ZIEL FÜR HEUTE</h2>
+        <form id="goal-form" class="line">
+          <label for="goal-input" class="sr-only">Tagesziel</label>
+          <input id="goal-input" maxlength="160" placeholder="Was möchtest du heute schaffen?" autocomplete="off">
+          <button type="submit" title="Tagesziel speichern" aria-label="Tagesziel speichern">↵</button>
+        </form>
+        <label id="goal-check-label" class="check" hidden><input id="goal-check" type="checkbox"><span>Für heute geschafft</span></label>
+        <p class="hint">Morgen ist Platz für ein neues Ziel.</p>
+      </section>
+    </section>
+    <aside class="tasks" aria-labelledby="tasks-title">
+      <div class="heading"><h2 id="tasks-title">Kleine Schritte</h2><span id="task-count" class="badge">0 offen</span></div>
+      <p class="muted">Eine Sache nach der anderen.</p>
+      <form id="task-form" class="line">
+        <label for="task-input" class="sr-only">Neue Aufgabe</label>
+        <input id="task-input" maxlength="160" required placeholder="Aufgabe hinzufügen …" autocomplete="off">
+        <button type="submit" aria-label="Aufgabe hinzufügen">+</button>
+      </form>
+      <ul id="task-list"></ul>
+      <p id="task-empty" class="empty">Dein Kopf darf frei sein.<br>Die Liste wartet auf dich.</p>
+      <p id="task-limit" class="hint" hidden>50 Aufgaben – lösche eine, um Platz zu schaffen.</p>
+    </aside>
+    <section class="websites" aria-labelledby="links-title">
+      <div class="heading"><h2 id="links-title" class="eyebrow">DEINE WEBSEITEN</h2><button id="edit-links" type="button" aria-pressed="false" hidden>Bearbeiten</button></div>
+      <ul id="link-list"></ul>
+      <button id="add-link" type="button">+ Verknüpfung hinzufügen</button>
+      <p id="link-limit" class="hint" hidden>Zwölf Verknüpfungen. Unter „Bearbeiten“ kannst du Platz schaffen.</p>
+    </section>
+  </main>
+  <footer id="footer" inert>
+    <details id="settings">
+      <summary><span aria-hidden="true">⚙</span> Einstellungen</summary>
+      <form id="name-form" class="settings-panel">
+        <label for="name-input">Wie möchtest du begrüßt werden?</label>
+        <div class="line"><input id="name-input" maxlength="40" placeholder="Dein Vorname" autocomplete="off"><button type="submit">Speichern</button></div>
+        <p class="hint">Leer speichern entfernt deinen Namen.</p>
+      </form>
+    </details>
+    <span class="privacy"><span aria-hidden="true">●</span> Auf deinem Gerät.</span>
+  </footer>
+  <p id="status" role="status" aria-live="polite">Dein Tab wird geöffnet …</p>
+  <button id="retry" type="button" hidden>Erneut laden</button>
+  <dialog id="link-dialog" aria-labelledby="dialog-title">
+    <form id="link-form">
+      <h2 id="dialog-title">Webseite verknüpfen</h2>
+      <label for="link-name">Name</label><input id="link-name" maxlength="32" required placeholder="Zum Beispiel Wikipedia" autocomplete="off">
+      <label for="link-url">Webadresse</label><input id="link-url" maxlength="2048" required placeholder="https://de.wikipedia.org" autocomplete="off" spellcheck="false" aria-describedby="link-help link-error">
+      <p id="link-help" class="hint">Ohne https:// ergänzen wir es für dich.</p>
+      <p id="link-error" role="alert"></p>
+      <div class="actions"><button id="cancel-link" type="button">Abbrechen</button><button type="submit">Speichern</button></div>
+    </form>
+  </dialog>
+  <noscript>Ruhe Tab benötigt JavaScript.</noscript>
+</body>
+</html>
