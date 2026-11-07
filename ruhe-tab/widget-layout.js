@@ -1,252 +1,254 @@
 "use strict";
 
 (() => {
-  const KEY = "ruhe-tab-widget-layout-v1";
+  const KEY = "ruhe-tab-widget-windows-v1";
+  const LEGACY_KEY = "ruhe-tab-widget-layout-v1";
   const definitions = [
-    ["clock", ".clock-widget", "Uhr und Datum"],
-    ["greeting", ".greeting-widget", "Begrüßung"],
-    ["goal", ".goal-section", "Tagesziel"],
-    ["tasks", ".tasks-panel", "Aufgabenliste"],
-    ["links", ".shortcuts", "Webseiten-Verknüpfungen"],
-    ["calendar", ".calendar-widget", "Kalender und Termine"]
+    ["clock", ".clock-widget", "Uhr und Datum", 360, 180, 90],
+    ["greeting", ".greeting-widget", "Begrüßung", 520, 180, 90],
+    ["goal", ".goal-section", "Tagesziel", 460, 200, 140],
+    ["tasks", ".tasks-panel", "Aufgabenliste", 310, 220, 180],
+    ["links", ".shortcuts", "Webseiten-Verknüpfungen", 600, 200, 140],
+    ["calendar", ".calendar-widget", "Kalender und Termine", 330, 260, 240]
   ];
   const stage = document.querySelector("main");
   const settings = document.getElementById("personalization");
   const toggle = document.getElementById("edit-widget-layout");
   const finish = document.getElementById("finish-widget-layout");
-  const status = (message, visible = false) => {
+  const clamp = (value, low, high) => Math.max(low, Math.min(Math.max(low, high), value));
+  let current, editing = false, gesture = null, raf = 0, front = 0;
+  const defaults = () => ({version:1, positions:null, sizes:{}, visible:Object.fromEntries(definitions.map(([name])=>[name,true]))});
+  function status(message, error = false) {
     document.getElementById("layout-status").textContent = message;
     const feedback = document.getElementById("layout-feedback");
-    feedback.textContent = visible ? message : "";
-    feedback.hidden = !visible;
-  };
-  const clamp = (value, low, high) => Math.max(low, Math.min(Math.max(low, high), value));
-  let current = null, editing = false, drag = null, raf = 0, front = 0;
-  const widgets = definitions.map(([name, selector, label]) => {
-    const node = document.querySelector(selector);
-    const marker = document.createComment(`layout-${name}`);
+    feedback.textContent = error ? message : ""; feedback.hidden = !error;
+  }
+  const widgets = definitions.map(([name, selector, label, width, minWidth, minHeight]) => {
+    const node = document.querySelector(selector), marker = document.createComment(`window-${name}`);
     node.before(marker);
-    const frame = document.createElement("div");
-    frame.className = "layout-frame"; frame.dataset.widget = name;
-    const handle = document.createElement("button");
-    handle.type = "button"; handle.className = "layout-handle"; handle.textContent = `↕ ${label}`;
-    handle.setAttribute("aria-label", `${label} verschieben`);
-    handle.setAttribute("aria-describedby", "layout-help");
-    handle.disabled = true;
-    frame.append(handle);
-    return {name, node, marker, frame, handle};
-  });
-  function read() {
-    const raw = localStorage.getItem(KEY);
-    if (raw === null) return null;
-    const value = JSON.parse(raw);
-    if (value?.version !== 1 || !value.positions || typeof value.positions !== "object") throw new Error("Ungültige Anordnung");
-    const positions = {};
-    for (const {name} of widgets) {
-      const point = value.positions[name] ?? (name === "calendar" ? {x:0.65, y:0.4} : null);
-      if (!point || typeof point.x !== "number" || !Number.isFinite(point.x) || typeof point.y !== "number" || !Number.isFinite(point.y)) throw new Error("Ungültige Position");
-      positions[name] = {x:clamp(point.x, 0, 1), y:clamp(point.y, 0, 1)};
-    }
-    return {version:1, positions};
-  }
-  function sizeStage() {
-    const margin = window.innerWidth <= 640 ? 12 : 24;
-    const top = Math.max(0, document.querySelector("header").getBoundingClientRect().bottom) + 8;
-    const bottom = document.querySelector("footer").getBoundingClientRect().height + 12;
-    stage.style.setProperty("--layout-top", `${top}px`);
-    stage.style.setProperty("--layout-left", `${margin}px`);
-    stage.style.setProperty("--layout-width", `${Math.max(1, window.innerWidth - 2 * margin)}px`);
-    stage.style.setProperty("--layout-height", `${Math.max(32, window.innerHeight - top - bottom)}px`);
-  }
-  function geometry(widget) {
-    return {width:widget.frame.offsetWidth, height:widget.frame.offsetHeight, areaWidth:stage.clientWidth, areaHeight:stage.clientHeight};
-  }
-  function place(widget, x, y, bounds = geometry(widget)) {
-    const point = {x:clamp(x, 0, bounds.areaWidth - bounds.width), y:clamp(y, 0, bounds.areaHeight - bounds.height)};
-    widget.frame.style.left = `${point.x}px`; widget.frame.style.top = `${point.y}px`;
-    return point;
-  }
-  function arrange() {
-    if (!current) return;
-    sizeStage();
-    const bounds = widgets.map(widget => geometry(widget));
-    widgets.forEach((widget, index) => {
-      const point = current.positions[widget.name];
-      place(widget, point.x * bounds[index].areaWidth, point.y * bounds[index].areaHeight, bounds[index]);
+    const frame = document.createElement("div"); frame.className = "layout-frame"; frame.dataset.widget = name;
+    const toolbar = document.createElement("div"); toolbar.className = "layout-toolbar";
+    const handle = document.createElement("button"); handle.type = "button"; handle.className = "layout-handle"; handle.textContent = `↕ ${label}`;
+    handle.setAttribute("aria-label", `${label} verschieben`); handle.setAttribute("aria-describedby", "layout-help");
+    const hide = document.createElement("button"); hide.type = "button"; hide.className = "widget-hide"; hide.textContent = "×";
+    hide.setAttribute("aria-label", `${label} ausblenden`); hide.title = "Ausblenden – Inhalte bleiben erhalten";
+    toolbar.append(handle, hide); frame.append(toolbar);
+    const grips = ["n","s","e","w","ne","nw","se","sw"].map(edge => {
+      const grip = document.createElement("button"); grip.type = "button"; grip.className = `resize-grip resize-${edge}`; grip.dataset.edge = edge;
+      grip.setAttribute("aria-label", `${label}: Fenstergröße an ${edge.toUpperCase()}-Kante ändern`); grip.setAttribute("aria-describedby", "layout-help");
+      grip.tabIndex = ["e","s"].includes(edge) ? 0 : -1; frame.append(grip); return grip;
     });
+    return {name,node,marker,frame,handle,hide,grips,width,minWidth,minHeight,checkbox:document.getElementById(`visible-${name}`)};
+  });
+  function parsePositions(value) {
+    if (value === null) return null;
+    if (!value || typeof value !== "object") throw new Error("Ungültige Positionen");
+    return Object.fromEntries(widgets.map(({name}) => {
+      const p = value[name] ?? (name === "calendar" ? {x:0.65,y:0.4} : null);
+      if (!p || typeof p.x !== "number" || !Number.isFinite(p.x) || typeof p.y !== "number" || !Number.isFinite(p.y)) throw new Error("Ungültige Position");
+      return [name,{x:clamp(p.x,0,1),y:clamp(p.y,0,1)}];
+    }));
   }
-  function schedule() {
-    if (!current || raf) return;
-    raf = requestAnimationFrame(() => { raf = 0; if (!drag) arrange(); });
-  }
-  function markEditing(value) {
-    editing = value;
-    document.body.classList.toggle("layout-editing", editing);
-    toggle.setAttribute("aria-pressed", String(editing));
-    toggle.textContent = editing ? "Layout beenden" : "Layout bearbeiten";
-    finish.hidden = !editing;
-    for (const widget of widgets) widget.handle.disabled = !editing;
-  }
-  function apply(layout) {
-    cancelDrag();
-    current = layout;
-    document.body.classList.toggle("layout-free", Boolean(layout));
-    for (const widget of widgets) {
-      if (layout) {
-        if (widget.node.parentElement !== widget.frame) widget.frame.append(widget.node);
-        if (widget.frame.parentElement !== stage) stage.append(widget.frame);
-      } else {
-        widget.marker.after(widget.node);
-        widget.frame.remove();
+  function read() {
+    const raw = localStorage.getItem(KEY), value = raw === null ? null : JSON.parse(raw), state = defaults();
+    if (value !== null) {
+      if (value.version !== 1) throw new Error("Ungültige Fenstereinstellungen");
+      state.positions = parsePositions(value.positions);
+      for (const {name} of widgets) {
+        if (value.visible?.[name] !== undefined) {
+          if (typeof value.visible[name] !== "boolean") throw new Error("Ungültige Sichtbarkeit");
+          state.visible[name] = value.visible[name];
+        }
+        const size = value.sizes?.[name];
+        if (size !== undefined) {
+          if (typeof size.w !== "number" || !Number.isFinite(size.w) || size.w <= 0 || typeof size.h !== "number" || !Number.isFinite(size.h) || size.h <= 0) throw new Error("Ungültige Fenstergröße");
+          state.sizes[name] = {w:Math.min(50000,size.w),h:Math.min(50000,size.h),custom:size.custom === true};
+        }
+      }
+    } else {
+      const oldRaw = localStorage.getItem(LEGACY_KEY);
+      if (oldRaw) {
+        const old = JSON.parse(oldRaw);
+        if (old?.version !== 1) throw new Error("Ungültige alte Anordnung");
+        state.positions = parsePositions(old.positions);
+        try { state.legacyWidths = JSON.parse(localStorage.getItem("ruhe-tab-widget-sizes-v1")) || {}; } catch { state.legacyWidths = {}; }
       }
     }
-    if (!layout) markEditing(false);
-    arrange();
+    return state;
+  }
+  function sizeStage() {
+    const margin = innerWidth <= 640 ? 12 : 24;
+    const top = Math.max(0, document.querySelector("header").getBoundingClientRect().bottom) + 8;
+    const bottom = document.querySelector("footer").getBoundingClientRect().height + 12;
+    stage.style.setProperty("--layout-top", `${top}px`); stage.style.setProperty("--layout-left", `${margin}px`);
+    stage.style.setProperty("--layout-width", `${Math.max(1,innerWidth-2*margin)}px`); stage.style.setProperty("--layout-height", `${Math.max(32,innerHeight-top-bottom)}px`);
+  }
+  function bounds(widget) {
+    return {aw:stage.clientWidth,ah:stage.clientHeight,w:widget.frame.offsetWidth,h:widget.frame.offsetHeight,minW:Math.min(widget.minWidth,stage.clientWidth),minH:Math.min(widget.minHeight,stage.clientHeight)};
+  }
+  function rect(widget) { const b = bounds(widget); return {x:parseFloat(widget.frame.style.left)||0,y:parseFloat(widget.frame.style.top)||0,w:b.w,h:b.h}; }
+  function place(widget, value) {
+    const b = bounds(widget), x = clamp(value.x,0,b.aw-b.w), y = clamp(value.y,0,b.ah-b.h);
+    widget.frame.style.left = `${x}px`; widget.frame.style.top = `${y}px`; return {x,y,w:b.w,h:b.h};
+  }
+  function arrange() {
+    if (!current?.positions) return;
+    sizeStage();
+    for (const widget of widgets) {
+      if (!current.visible[widget.name]) continue;
+      const b = bounds(widget), size = current.sizes[widget.name];
+      const legacy = current.legacyWidths?.[widget.name];
+      const multiplier = typeof legacy === "number" && Number.isFinite(legacy) ? clamp(legacy,75,150)/100 : 1;
+      widget.frame.style.width = `${clamp(size?.w || widget.width*multiplier,b.minW,b.aw)}px`;
+      widget.frame.style.height = size ? `${clamp(size.h,b.minH,b.ah)}px` : "";
+      widget.frame.dataset.sized = String(Boolean(size));
+    }
+    for (const widget of widgets) {
+      if (!current.visible[widget.name]) continue;
+      if (!current.sizes[widget.name]) {
+        const b = bounds(widget);
+        current.sizes[widget.name] = {w:b.w,h:clamp(b.h,b.minH,b.ah),custom:false};
+        widget.frame.style.height = `${current.sizes[widget.name].h}px`; widget.frame.dataset.sized = "true";
+      }
+      const p = current.positions[widget.name]; place(widget,{x:p.x*stage.clientWidth,y:p.y*stage.clientHeight});
+    }
+    delete current.legacyWidths;
+  }
+  function schedule() {
+    if (!current?.positions || raf) return;
+    raf = requestAnimationFrame(()=>{raf=0;if(!gesture)arrange()});
+  }
+  function markEditing(value) {
+    editing = value; document.body.classList.toggle("layout-editing",editing);
+    toggle.setAttribute("aria-pressed",String(editing)); toggle.textContent = editing ? "Layout beenden" : "Layout bearbeiten"; finish.hidden = !editing;
+    for (const widget of widgets) for (const button of [widget.handle,widget.hide,...widget.grips]) button.disabled = !editing || !current?.visible[widget.name];
+  }
+  function apply(state) {
+    cancelGesture(); current=state; document.body.classList.toggle("layout-free",Boolean(state.positions));
+    for (const widget of widgets) {
+      widget.node.hidden = !state.visible[widget.name]; widget.frame.hidden = !state.visible[widget.name]; widget.checkbox.checked = state.visible[widget.name];
+      if (state.positions) { if(widget.node.parentElement!==widget.frame)widget.frame.append(widget.node);if(widget.frame.parentElement!==stage)stage.append(widget.frame); }
+      else { widget.marker.after(widget.node);widget.frame.remove(); }
+    }
+    document.querySelector(".focus").hidden = !["clock","greeting","goal"].some(name=>state.visible[name]);
+    document.getElementById("widgets-empty").hidden = widgets.some(widget=>state.visible[widget.name]);
+    markEditing(Boolean(state.positions) && editing); arrange();
   }
   function restore() {
     try { apply(read()); }
-    catch {
-      apply(null);
-      status("Die gespeicherte Anordnung konnte nicht gelesen werden. Die Standardanordnung wird angezeigt.", true);
-    }
+    catch { apply(defaults());status("Die Fenstereinstellungen konnten nicht gelesen werden. Standardwerte werden angezeigt; deine Inhalte wurden nicht gelöscht.",true); }
   }
-  function store(layout) {
-    localStorage.setItem(KEY, JSON.stringify(layout));
-    current = layout;
+  function latest() { try { return read(); } catch { return current || defaults(); } }
+  function commit(state,message) {
+    try { apply(state);localStorage.setItem(KEY,JSON.stringify(current));status(message);return true; }
+    catch { restore();status("Die Änderung konnte nicht gespeichert werden. Die zuletzt gespeicherten Fenstereinstellungen werden angezeigt.",true);return false; }
+  }
+  function raise(widget) { widget.frame.style.zIndex=String(++front); }
+  function cancelGesture() {
+    if(!gesture)return;
+    const old=gesture;gesture=null;old.widget.frame.classList.remove("is-dragging","is-resizing");
+    if(old.control.hasPointerCapture(old.id))old.control.releasePointerCapture(old.id);
     arrange();
   }
-  function commitPosition(widget) {
-    try {
-      let latest;
-      try { latest = read(); } catch { latest = null; }
-      const bounds = geometry(widget);
-      const positions = {...(latest || current).positions};
-      positions[widget.name] = {
-        x:clamp(parseFloat(widget.frame.style.left) / Math.max(1, bounds.areaWidth), 0, 1),
-        y:clamp(parseFloat(widget.frame.style.top) / Math.max(1, bounds.areaHeight), 0, 1)
-      };
-      store({version:1, positions});
-      status("Position lokal gespeichert.");
-    } catch {
-      restore();
-      status("Die Position konnte nicht gespeichert werden. Die zuletzt gespeicherte Anordnung wird angezeigt.", true);
+  function seedPositions(original) {
+    const visible=widgets.filter(widget=>current.visible[widget.name]), gap=16, points={};
+    let x=0,y=0,rowHeight=0,usedWidth=0;
+    for(const widget of visible) {
+      const b=bounds(widget);
+      if(x && x+b.w>stage.clientWidth){y+=rowHeight+gap;x=0;rowHeight=0}
+      points[widget.name]={x,y};usedWidth=Math.max(usedWidth,x+b.w);x+=b.w+gap;rowHeight=Math.max(rowHeight,b.h);
+    }
+    const totalHeight=y+rowHeight, fits=totalHeight<=stage.clientHeight;
+    for(const widget of widgets) {
+      let p=points[widget.name] || {x:0,y:0};
+      if(fits){p={x:p.x+(stage.clientWidth-usedWidth)/2,y:p.y+(stage.clientHeight-totalHeight)/2}}
+      else if(original?.[widget.name]){const area=stage.getBoundingClientRect();p={x:original[widget.name].left-area.left,y:original[widget.name].top-area.top}}
+      else {const index=widgets.indexOf(widget);p={x:(index%2)*stage.clientWidth*.55,y:Math.floor(index/2)*stage.clientHeight*.28}}
+      const actual=place(widget,p);
+      current.positions[widget.name]={x:actual.x/Math.max(1,stage.clientWidth),y:actual.y/Math.max(1,stage.clientHeight)};
     }
   }
-  function raise(widget) { widget.frame.style.zIndex = String(++front); }
-  function cancelDrag() {
-    if (!drag) return;
-    const previous = drag; drag = null;
-    previous.widget.frame.classList.remove("is-dragging");
-    if (previous.widget.handle.hasPointerCapture(previous.pointerId)) previous.widget.handle.releasePointerCapture(previous.pointerId);
-    place(previous.widget, previous.startX, previous.startY);
-  }
-  function endEditing() {
-    cancelDrag(); markEditing(false); arrange(); settings.querySelector("summary").focus();
-  }
-  function initialPixels(original) {
-    const area = stage.getBoundingClientRect();
-    const bounds = Object.fromEntries(widgets.map(widget => [widget.name, geometry(widget)]));
-    const left = ["clock", "greeting", "goal"];
-    const gap = 16;
-    const leftWidth = Math.max(...left.map(name => bounds[name].width));
-    const leftHeight = left.reduce((sum, name) => sum + bounds[name].height, 0) + gap * 2;
-    const rowWidth = leftWidth + 32 + Math.max(bounds.tasks.width, bounds.calendar.width);
-    const rowHeight = Math.max(leftHeight, bounds.tasks.height + gap + bounds.calendar.height);
-    const totalHeight = rowHeight + gap + bounds.links.height;
-    if (rowWidth <= area.width && bounds.links.width <= area.width && totalHeight <= area.height) {
-      // Seed a readable two-column arrangement if it fits; all later moves stay unrestricted.
-      const x = (area.width - Math.max(rowWidth, bounds.links.width)) / 2;
-      const y = (area.height - totalHeight) / 2;
-      const points = {tasks:{x:x + leftWidth + 32, y}, calendar:{x:x + leftWidth + 32, y:y + bounds.tasks.height + gap}, links:{x, y:y + rowHeight + gap}};
-      let nextY = y;
-      for (const name of left) { points[name] = {x, y:nextY}; nextY += bounds[name].height + gap; }
-      return points;
-    }
-    return Object.fromEntries(widgets.map((widget, index) => [widget.name, {x:original[index].left - area.left, y:original[index].top - area.top}]));
-  }
+  function endEditing(){cancelGesture();markEditing(false);arrange();settings.querySelector("summary").focus()}
   function startEditing() {
-    if (!current) {
-      window.scrollTo(0, 0);
-      const original = widgets.map(widget => widget.node.getBoundingClientRect());
-      const seed = {version:1, positions:Object.fromEntries(widgets.map(({name}) => [name, {x:0, y:0}]))};
-      apply(seed); markEditing(true); sizeStage();
-      const area = stage.getBoundingClientRect();
-      const pixels = initialPixels(original);
-      widgets.forEach(widget => {
-        const point = place(widget, pixels[widget.name].x, pixels[widget.name].y);
-        seed.positions[widget.name] = {x:point.x / Math.max(1, area.width), y:point.y / Math.max(1, area.height)};
+    if(!current.positions) {
+      window.scrollTo(0,0);
+      const original=Object.fromEntries(widgets.map(widget=>[widget.name,widget.node.getBoundingClientRect()]));
+      const state=latest();state.positions=Object.fromEntries(widgets.map(({name})=>[name,{x:0,y:0}]));apply(state);seedPositions(original);
+      if(!commit(current,"Freie Anordnung lokal gespeichert."))return;
+    }
+    markEditing(true);arrange();settings.open=false;(widgets.find(widget=>current.visible[widget.name])?.handle || finish).focus();
+  }
+  function setVisible(widget,value,fromClose=false) {
+    const state=latest();state.visible[widget.name]=value;
+    if(commit(state,value?"Widget wieder hinzugefügt. Inhalte und Einstellungen bleiben erhalten.":"Widget ausgeblendet. Inhalte und Einstellungen bleiben erhalten.") && fromClose) {
+      (widgets.find(item=>current.visible[item.name])?.handle || finish).focus();
+    }
+  }
+  function changedRect(start,edge,dx,dy,widget) {
+    const b=bounds(widget), r={...start};
+    if(edge==="move"){r.x=clamp(start.x+dx,0,b.aw-start.w);r.y=clamp(start.y+dy,0,b.ah-start.h);return r}
+    if(edge.includes("e"))r.w=clamp(start.w+dx,b.minW,b.aw-start.x);
+    if(edge.includes("s"))r.h=clamp(start.h+dy,b.minH,b.ah-start.y);
+    if(edge.includes("w")){r.x=clamp(start.x+dx,0,start.x+start.w-b.minW);r.w=start.x+start.w-r.x}
+    if(edge.includes("n")){r.y=clamp(start.y+dy,0,start.y+start.h-b.minH);r.h=start.y+start.h-r.y}
+    return r;
+  }
+  function preview(widget,r,edge) {
+    if(edge!=="move"){widget.frame.style.width=`${r.w}px`;widget.frame.style.height=`${r.h}px`;widget.frame.dataset.sized="true"}
+    place(widget,r);
+  }
+  function commitRect(widget,r,resized) {
+    const state=latest();
+    state.positions ||= current.positions;
+    state.positions={...state.positions,[widget.name]:{x:clamp(r.x/Math.max(1,stage.clientWidth),0,1),y:clamp(r.y/Math.max(1,stage.clientHeight),0,1)}};
+    state.sizes[widget.name]=resized?{w:r.w,h:r.h,custom:true}:current.sizes[widget.name];
+    commit(state,resized?"Fenstergröße lokal gespeichert.":"Position lokal gespeichert.");
+  }
+  for(const widget of widgets) {
+    widget.checkbox.addEventListener("change",()=>setVisible(widget,widget.checkbox.checked));
+    widget.hide.addEventListener("click",()=>setVisible(widget,false,true));
+    widget.frame.addEventListener("pointerdown",()=>raise(widget));widget.frame.addEventListener("focusin",()=>raise(widget));
+    for(const control of [widget.handle,...widget.grips]) {
+      const edge=control.dataset.edge || "move";
+      control.addEventListener("pointerdown",event=>{
+        if(!editing || !current.positions || event.button!==0 || !event.isPrimary)return;
+        event.preventDefault();cancelGesture();control.focus();raise(widget);
+        gesture={widget,control,edge,id:event.pointerId,x:event.clientX,y:event.clientY,start:rect(widget)};
+        widget.frame.classList.add(edge==="move"?"is-dragging":"is-resizing");control.setPointerCapture(event.pointerId);
       });
-      try { store(seed); }
-      catch {
-        restore();
-        status("Das Layout konnte nicht gespeichert werden. Bitte versuche es erneut.", true);
-        return;
-      }
+      control.addEventListener("pointermove",event=>{if(gesture?.control===control && gesture.id===event.pointerId)preview(widget,changedRect(gesture.start,edge,event.clientX-gesture.x,event.clientY-gesture.y,widget),edge)});
+      control.addEventListener("pointerup",event=>{
+        if(gesture?.control!==control || gesture.id!==event.pointerId)return;
+        const r=rect(widget);gesture=null;widget.frame.classList.remove("is-dragging","is-resizing");if(control.hasPointerCapture(event.pointerId))control.releasePointerCapture(event.pointerId);commitRect(widget,r,edge!=="move");
+      });
+      for(const type of ["pointercancel","lostpointercapture"])control.addEventListener(type,event=>{if(gesture?.control===control && gesture.id===event.pointerId)cancelGesture()});
+      control.addEventListener("keydown",event=>{
+        if(!editing || !current.positions)return;
+        if(event.key==="Escape"){event.preventDefault();if(gesture)cancelGesture();else endEditing();return}
+        if(event.key==="Enter"){event.preventDefault();endEditing();return}
+        const direction={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];
+        if(!direction || gesture)return;
+        const dx=(edge==="move" || /[ew]/.test(edge))?direction[0]*(event.shiftKey?1:10):0;
+        const dy=(edge==="move" || /[ns]/.test(edge))?direction[1]*(event.shiftKey?1:10):0;
+        if(!dx && !dy)return;event.preventDefault();const r=changedRect(rect(widget),edge,dx,dy,widget);preview(widget,r,edge);commitRect(widget,r,edge!=="move");
+      });
     }
-    markEditing(true); arrange();
-    status("Verschiebe die Widgets an ihrer Griffleiste. „Layout fertig“ beendet die Bearbeitung.");
-    settings.open = false; widgets[0].handle.focus();
   }
-  for (const widget of widgets) {
-    widget.frame.addEventListener("pointerdown", () => raise(widget));
-    widget.frame.addEventListener("focusin", () => raise(widget));
-    widget.handle.addEventListener("pointerdown", event => {
-      if (!editing || !current || event.button !== 0 || !event.isPrimary) return;
-      event.preventDefault();
-      cancelDrag(); widget.handle.focus(); raise(widget);
-      drag = {widget, pointerId:event.pointerId, x:event.clientX, y:event.clientY, startX:parseFloat(widget.frame.style.left) || 0, startY:parseFloat(widget.frame.style.top) || 0};
-      widget.frame.classList.add("is-dragging");
-      widget.handle.setPointerCapture(event.pointerId);
-    });
-    widget.handle.addEventListener("pointermove", event => {
-      if (!drag || drag.widget !== widget || drag.pointerId !== event.pointerId) return;
-      place(widget, drag.startX + event.clientX - drag.x, drag.startY + event.clientY - drag.y);
-    });
-    widget.handle.addEventListener("pointerup", event => {
-      if (!drag || drag.widget !== widget || drag.pointerId !== event.pointerId) return;
-      drag = null; widget.frame.classList.remove("is-dragging");
-      if (widget.handle.hasPointerCapture(event.pointerId)) widget.handle.releasePointerCapture(event.pointerId);
-      commitPosition(widget);
-    });
-    for (const type of ["pointercancel", "lostpointercapture"]) widget.handle.addEventListener(type, event => {
-      if (drag?.widget === widget && drag.pointerId === event.pointerId) cancelDrag();
-    });
-    widget.handle.addEventListener("keydown", event => {
-      if (!editing || !current) return;
-      if (event.key === "Escape") {
-        event.preventDefault(); if (drag) cancelDrag(); else endEditing(); return;
-      }
-      if (event.key === "Enter") { event.preventDefault(); endEditing(); return; }
-      const directions = {ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1]};
-      const direction = directions[event.key];
-      if (!direction || drag) return;
-      event.preventDefault();
-      const step = event.shiftKey ? 1 : 10;
-      place(widget, parseFloat(widget.frame.style.left) + direction[0] * step, parseFloat(widget.frame.style.top) + direction[1] * step);
-      commitPosition(widget);
-    });
-  }
-  toggle.addEventListener("click", () => { if (editing) endEditing(); else startEditing(); });
-  finish.addEventListener("click", endEditing);
-  document.getElementById("reset-widget-layout").addEventListener("click", () => {
-    try {
-      localStorage.removeItem(KEY); apply(null);
-      status("Die Standardanordnung ist wiederhergestellt. Deine Größen und Inhalte bleiben erhalten.");
-    } catch {
-      restore(); status("Die Anordnung konnte nicht zurückgesetzt werden. Bitte versuche es erneut.", true);
-    }
+  toggle.addEventListener("click",()=>editing?endEditing():startEditing());finish.addEventListener("click",endEditing);
+  document.getElementById("reset-widget-layout").addEventListener("click",()=>{
+    const state=latest(), custom=Object.fromEntries(Object.entries(state.sizes).filter(([,size])=>size.custom));
+    state.sizes=custom;
+    if(Object.keys(custom).length){state.positions=Object.fromEntries(widgets.map(({name})=>[name,{x:0,y:0}]));apply(state);seedPositions();commit(current,"Standardanordnung hergestellt. Eigene Fenstergrößen, Schrift und Inhalte bleiben erhalten.")}
+    else {state.positions=null;commit(state,"Standardanordnung hergestellt. Sichtbarkeit, Schrift und Inhalte bleiben erhalten.")}
   });
-  window.addEventListener("resize", () => { cancelDrag(); schedule(); });
-  window.addEventListener("blur", cancelDrag);
-  window.addEventListener("pagehide", () => { cancelDrag(); if (raf) cancelAnimationFrame(raf); raf = 0; });
-  window.addEventListener("pageshow", schedule);
-  window.addEventListener("storage", event => {
-    if (event.key !== KEY && event.key !== null) return;
-    status(""); restore();
-  });
-  document.addEventListener("ruhe-widget-sizes-change", () => { cancelDrag(); schedule(); });
-  const observer = new ResizeObserver(schedule);
-  for (const widget of widgets) observer.observe(widget.frame);
-  observer.observe(document.querySelector("header")); observer.observe(document.querySelector("footer"));
-  restore();
+  document.getElementById("reset-window-sizes").addEventListener("click",()=>{const state=latest();state.sizes={};commit(state,"Standardfenstergrößen hergestellt. Positionen, Schrift und Inhalte bleiben erhalten.")});
+  document.getElementById("show-widget-settings").addEventListener("click",event=>{event.stopPropagation();settings.open=true;document.querySelector(".widget-manager").scrollIntoView({block:"start"});widgets[0].checkbox.focus()});
+  window.addEventListener("resize",()=>{cancelGesture();schedule()});window.addEventListener("blur",cancelGesture);
+  window.addEventListener("pagehide",()=>{cancelGesture();if(raf)cancelAnimationFrame(raf);raf=0});window.addEventListener("pageshow",schedule);
+  window.addEventListener("storage",event=>{if(event.key!==KEY && event.key!==LEGACY_KEY && event.key!==null)return;status("");restore()});
+  document.addEventListener("ruhe-widget-sizes-change",()=>{cancelGesture();schedule()});
+  const observer=new ResizeObserver(schedule);
+  for(const widget of widgets)observer.observe(widget.frame);
+  observer.observe(document.querySelector("header"));observer.observe(document.querySelector("footer"));
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",restore,{once:true});else restore();
 })();

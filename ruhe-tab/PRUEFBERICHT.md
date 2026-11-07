@@ -1,6 +1,21 @@
-# Chrome-Prüfbericht – Version 1.6.0
+# Chrome-Prüfbericht – Version 1.7.0
 
 Die Originaldateien wurden mit Playwright und Chromium 154 über einen ausschließlich lokalen Testserver mit der Sicherheitsrichtlinie aus dem Manifest geprüft. Der Testserver gehört nicht zur Erweiterung. Die Kalenderprüfung verwendete die Zeitzone Europe/Berlin und kontrollierte Browserzeiten.
+
+## Sichtbarkeit und Fenstergrößen
+
+`tests/chrome-windows.cjs` erfolgreich:
+
+- Alle sechs Widget-Typen einzeln aus- und wieder eingeblendet; Wiederherstellung aus dem Zustand mit ausschließlich ausgeblendeten Widgets.
+- Echte Mauszüge an Ecken und Rändern ändern Breite und Höhe unabhängig. Obere/linke Kante hält die gegenüberliegende Kante fest. Die berechnete Schriftgröße bleibt beim Ziehen unverändert.
+- Die Vorschau schreibt noch keine Daten. Escape stellt die gespeicherte Größe wieder her. Größenränder erscheinen nur im Bearbeitungsmodus und unterstützen Pfeiltasten.
+- Ausblenden erhält Abmessungen, Position und Inhalt. Neuladen stellt Fenster wieder her. Schriftregler ändern ein festgelegtes Fenster nicht.
+- Bei 320–1440 Pixeln bleibt die Darstellung im Arbeitsbereich. Kleinere Browserfenster überschreiben die gespeicherten Abmessungen nicht; Mindest- und Höchstgrößen werden eingehalten.
+- Fenstergrößen und Sichtbarkeit werden zwischen Tabs abgeglichen. Die drei Rücksetzfunktionen erhalten Inhalte und die jeweils unabhängigen Einstellungen.
+- Fehlgeschlagene Schreibzugriffe stellen den gespeicherten Zustand wieder her und zeigen einen Fehler. Beschädigte Fenstereinstellungen werden mit Hinweis durch angezeigte Standardwerte ersetzt; gespeicherte Inhalte bleiben erhalten.
+- Name, Tagesziel, Aufgaben, Links und Termine bleiben bei den Fensteraktionen unverändert. Offline-Bedienung, keine externen Anfragen und keine unbehandelten JavaScript-Fehler.
+
+Sichtbarkeit, Positionen und Abmessungen liegen gemeinsam unter `ruhe-tab-widget-windows-v1`. Alte Positionen werden übernommen; der alte Positionsdatensatz bleibt unverändert. Die bisherigen Prozentwerte werden als Schriftgrößen weiterverwendet. Die Fußleiste zeigt „Nur lokal.“.
 
 ## Kalender- und Terminlogik
 
@@ -31,8 +46,8 @@ Die Darstellung wurde zusätzlich visuell geprüft. Termine liegen einzeln unter
 
 Die Browserprüfungen wurden mit den neuen Dateien erneut erfolgreich ausgeführt:
 
-- `tests/chrome-widget-sizes.cjs`: unabhängige Größenregler für sechs Widgets, Vorschau, Speicherung, Tastatur, Abgleich zwischen Tabs, Reset, Fehlerfälle und Standardanordnung bei 75/150 Prozent sowie 320–1440 Pixeln Fensterbreite.
-- `tests/chrome-widget-layout.cjs`: freie Anordnung von sechs Widgets, Maus, Touch und Tastatur, Abbruch, Speicherung/Neuladen, Begrenzung auf den Arbeitsbereich, Fensterwechsel, bestehende Größen, Reset, Fehlerfälle und keine dauernde Animationsschleife. Die alte Fünf-Widget-Konfiguration wird als Kompatibilitätsfall weiter geprüft.
+- `tests/chrome-widget-sizes.cjs`: unabhängige Schriftregler für sechs Widgets, Vorschau, Speicherung, Tastatur, Abgleich zwischen Tabs, Reset, Fehlerfälle und Standardanordnung bei 75/150 Prozent sowie 320–1440 Pixeln Fensterbreite.
+- `tests/chrome-widget-layout.cjs`: freie Anordnung von sechs Widgets, Maus, Touch und Tastatur, Größenänderung per Touch, Abbruch, Speicherung/Neuladen, Begrenzung auf den Arbeitsbereich, Fensterwechsel, separate Schriftgrößen, Reset, Fehlerfälle und keine dauernde Animationsschleife. Die alte Fünf-Widget-Konfiguration wird als Kompatibilitätsfall weiter geprüft.
 - `tests/chrome-backgrounds.cjs`: echte IndexedDB-Speicherung, proportionale Bildanpassung, Wiederherstellung, Übernahme alter Bilder, Abgleich zwischen Tabs, Offline-Bedienung und Fehlerfälle.
 
 JavaScript-Syntax und HTML-Struktur wurden zusätzlich geprüft: eindeutige IDs, alle Skriptdateien vorhanden. Die Sicherheitsrichtlinie blockiert weiterhin externe Verbindungen. Der vorhandene Uhr-Timer meldet seine Aktualisierung zusätzlich an den Kalender; ein zweiter Timer wird nicht angelegt.

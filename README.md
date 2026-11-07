@@ -64,27 +64,33 @@ Die Logiktests, UI-Prüfung und Mozilla-Manifestprüfung waren erfolgreich. **De
 MIT-Lizenz: [LICENSE.txt](ruhe-tab-firefox/LICENSE.txt).
 
 
-## Google Chrome – frei anordnen, Größen und Hintergrund (Version 1.6.0)
+## Google Chrome – anpassbare Widgets (Version 1.7.0)
 
 Die Chrome-Version liegt im Ordner **ruhe-tab**. [Projekt als ZIP herunterladen](https://github.com/C00Dexe/ruhe-tab/archive/refs/heads/main.zip).
 
-Unten links bleibt **Chrome anpassen** erreichbar. Unter **Anordnung → Layout bearbeiten** kannst du die sechs Widgets an ihren Griffleisten frei im Fenster verschieben. **Layout fertig** beendet die Bearbeitung. Positionen bleiben lokal gespeichert; bei kleineren Fenstern bleiben Widgets im verfügbaren Bereich. **Standardanordnung wiederherstellen** setzt nur die Anordnung zurück. Überlappungen sind möglich. Die Griffleisten unterstützen auch Touch und Pfeiltasten. Unter **Widgetgrößen** lassen sich Aufgabenliste, Begrüßung, Uhr und Datum, Tagesziel, Webseiten-Verknüpfungen und Kalender einzeln auf **75–150 %** einstellen. Die Vorschau ist sofort sichtbar. Die Auswahl wird beim Loslassen oder per Pfeiltaste ausschließlich lokal gespeichert und nach dem Neuladen wiederhergestellt. **Standardgrößen wiederherstellen** setzt nur die Größen zurück; deine Inhalte und der Hintergrund bleiben erhalten. Auf schmalen Fenstern passen sich Breite und Anordnung dem verfügbaren Platz an. Damit öffnest du das eigene Anpassungsfeld von Ruhe Tab: drei lokale Farbverläufe oder ein eigenes JPG-, PNG- oder WebP-Bild bis 10 MB auswählen. Das Bild wird einmalig proportional auf höchstens 2560 × 1440 Pixel verkleinert, als WebP in IndexedDB gespeichert und beim späteren Öffnen direkt wiederverwendet. Kleine Bilder werden nicht vergrößert. Die Originaldatei bleibt unverändert. Die Auswahl bleibt ausschließlich lokal gespeichert. Vorhandene Bilddaten aus der älteren Chrome-Version werden nach Möglichkeit automatisch übernommen. ×, Escape oder ein Außenklick schließen das Feld. Der Text „Ein Moment für dich.“ wurde entfernt.
+Unten links bleibt **Chrome anpassen** erreichbar. Dort kannst du unter **Widgets** Uhr, Begrüßung, Tagesziel, Aufgabenliste, Webseiten-Verknüpfungen und Kalender einzeln ein- oder ausschalten. Jeden Typ gibt es einmal. Ausblenden erhält Inhalte, Position und Fenstergröße. Sind alle ausgeblendet, führt **Widgets hinzufügen** wieder zur Auswahl.
 
-Zum Aktualisieren alte Ruhe-Tabs schließen, die Dateien aus dem neuen Unterordner `ruhe-tab` in den **bisherigen Chrome-Installationsordner** kopieren und unter `chrome://extensions` bei Ruhe Tab auf ↻ klicken. Den Ordnerpfad nicht ändern und die Erweiterung nicht entfernen. So wird der bisherige lokale Speicher weiterverwendet.
+Über **Anordnung → Layout bearbeiten** verschiebst du Widgets an ihrer Griffleiste und änderst ihre Breite und Höhe durch Ziehen an allen Rändern und Ecken. Das × blendet das jeweilige Widget aus. **Layout fertig** beendet die Bearbeitung. Die Fenster bleiben auf den verfügbaren Platz begrenzt; längere Inhalte lassen sich im Widget scrollen. Die Schrift bleibt beim Ziehen gleich groß. Unter **Schriftgröße** gibt es dafür sechs separate Regler von **75–150 %**. Alles bleibt lokal gespeichert und wird zwischen geöffneten Ruhe-Tabs abgeglichen.
+
+**Standardanordnung wiederherstellen** ordnet neu und erhält selbst gezogene Fenstergrößen. **Standardfenstergrößen wiederherstellen** setzt nur Breite und Höhe zurück. **Standardschriftgrößen wiederherstellen** setzt nur die Prozentregler zurück. Inhalte, Hintergrund und Sichtbarkeit bleiben bei allen drei Aktionen erhalten. Die Fußleiste zeigt nur noch **Nur lokal.**
+
+Unter **Chrome anpassen** stehen außerdem drei lokale Farbverläufe und eigene JPG-, PNG- oder WebP-Bilder bis 10 MB zur Auswahl. Eigene Bilder werden einmalig proportional auf höchstens 2560 × 1440 Pixel verkleinert und lokal in IndexedDB gespeichert. Kleine Bilder werden nicht vergrößert. Die Originaldatei bleibt unverändert. ×, Escape oder ein Außenklick schließen das Anpassungsfeld.
+
+Zum Aktualisieren alte Ruhe-Tabs schließen, die Dateien aus dem neuen Unterordner `ruhe-tab` in den **bisherigen Chrome-Installationsordner** kopieren und unter `chrome://extensions` bei Ruhe Tab auf ↻ klicken. Den Ordnerpfad nicht ändern und die Erweiterung nicht entfernen. So wird der bisherige lokale Speicher weiterverwendet. Vorhandene Positionen werden übernommen; die bisherigen Prozentwerte bleiben als Schriftgrößen erhalten. Firefox wird mit diesem Update nicht geändert.
 
 [Chrome-Anleitung](ruhe-tab/ANLEITUNG.md) · [Chrome-Prüfbericht](ruhe-tab/PRUEFBERICHT.md)
 
-Automatisierte Browserprüfung für die Chrome-Hintergründe: `tests/chrome-backgrounds.cjs` (Playwright und Chromium). Diese prüft echte IndexedDB-Speicherung, Größenanpassung, Übernahme alter Bilddaten, Neuladen, Abgleich zwischen Tabs und Fehlerfälle.
+Automatisierte Browserprüfungen (Playwright und Chromium; optional `CHROMIUM_PATH` setzen):
 
-Automatisierte Browserprüfung der Chrome-Widgetgrößen: `tests/chrome-widget-sizes.cjs` (Playwright und Chromium; bei Bedarf `CHROMIUM_PATH` setzen). Geprüft werden Vorschau, Speicherung, Tastaturbedienung, Abgleich zwischen Tabs, Zurücksetzen, Fehlerfälle und Anordnung bei unterschiedlichen Fensterbreiten.
-
-Automatisierte Browserprüfung des freien Chrome-Layouts: `tests/chrome-widget-layout.cjs` (Playwright und Chromium). Sie prüft Pointer- und Tastaturbedienung, Speicherung, Abbruch, Neuladen, Fenstergrößen, Widgetgrößen, Abgleich zwischen Tabs und Zurücksetzen.
-
+- `node tests/chrome-windows.cjs`: Ein-/Ausblenden, Größenänderung an Rändern und Ecken, unveränderte Schrift beim Ziehen, Wiederherstellung, Grenzen, Abbruch, Abgleich zwischen Tabs und Fehlerfälle.
+- `node tests/chrome-widget-sizes.cjs`: separate Schriftregler, Vorschau, Speicherung, Tastatur, Zurücksetzen und schmale Fenster.
+- `node tests/chrome-widget-layout.cjs`: freies Verschieben mit Maus, Touch und Tastatur, alte Positionen, Speicherung, Fensterwechsel und keine dauernde Animationsschleife.
+- `node tests/chrome-backgrounds.cjs`: echte IndexedDB-Speicherung, Bildanpassung, alte Bilddaten, Neuladen, Abgleich zwischen Tabs und Fehlerfälle.
 
 ### Lokaler Kalender und Termine in Chrome
 
 Das Widget **Kalender & Termine** zeigt den Monat, Termine des ausgewählten Tages und die nächsten fünf anstehenden Termine. **+ Termin** öffnet ein Formular für Titel, Datum und optionale Uhrzeit. Ohne Uhrzeit ist der Termin ganztägig. Zum Bearbeiten oder Löschen einen vorhandenen Termin anklicken. Ein Punkt markiert Tage mit Terminen.
 
-Bis zu 500 Termine bleiben ausschließlich im aktuellen Browserprofil gespeichert und werden zwischen geöffneten Ruhe-Tabs abgeglichen. Es gibt keine Konten, Serververbindungen oder Geräte-Synchronisierung. Der Kalender verwendet den vorhandenen Uhr-Takt; es gibt keinen zusätzlichen Hintergrundtimer. Größe und Position sind wie bei den anderen Widgets anpassbar. Vorhandene Positionen und Größen aus Version 1.5 bleiben erhalten.
+Bis zu 500 Termine bleiben ausschließlich im aktuellen Browserprofil gespeichert und werden zwischen geöffneten Ruhe-Tabs abgeglichen. Es gibt keine Konten, Serververbindungen oder Geräte-Synchronisierung. Der Kalender verwendet den vorhandenen Uhr-Takt; es gibt keinen zusätzlichen Hintergrundtimer. Größe und Position sind wie bei den anderen Widgets anpassbar. Vorhandene Positionen werden übernommen; bisherige Prozentwerte bleiben als Schriftgrößen erhalten.
 
 Prüfungen: `node tests/calendar-model.test.mjs` für die Datums- und Terminlogik sowie `tests/chrome-calendar.cjs` für die Browserbedienung (Playwright und Chromium; optional `CHROMIUM_PATH`).

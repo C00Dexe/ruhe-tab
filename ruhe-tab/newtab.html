@@ -15,6 +15,7 @@
 <body>
   <header class="topbar"><span class="brand"><span class="brand-mark" aria-hidden="true">◒</span> RUHE TAB</span></header>
   <main>
+    <div id="widgets-empty" hidden><p>Alle Widgets sind ausgeblendet.</p><button id="show-widget-settings" type="button">Widgets hinzufügen</button></div>
     <section class="focus" aria-label="Dein Tag">
       <div class="clock-widget" role="group" aria-label="Uhr und Datum">
       <p id="date" class="eyebrow"></p>
@@ -100,16 +101,29 @@
       <summary><span aria-hidden="true">⚙</span> Chrome anpassen</summary>
       <div class="settings-panel">
       <div class="appearance-heading panel-title"><h2>Chrome anpassen</h2><button id="close-appearance" type="button" aria-label="Anpassungsfeld schließen">×</button></div>
+      <section class="widget-manager" aria-labelledby="widget-manager-title">
+        <h3 id="widget-manager-title">Widgets hinzufügen oder ausblenden</h3>
+        <p class="hint">Jeden Typ gibt es einmal. Inhalte und Einstellungen bleiben beim Ausblenden erhalten.</p>
+        <div class="widget-switches">
+          <label><input type="checkbox" id="visible-clock" checked><span>Uhr und Datum</span></label>
+          <label><input type="checkbox" id="visible-greeting" checked><span>Begrüßung</span></label>
+          <label><input type="checkbox" id="visible-goal" checked><span>Tagesziel</span></label>
+          <label><input type="checkbox" id="visible-tasks" checked><span>Aufgabenliste</span></label>
+          <label><input type="checkbox" id="visible-links" checked><span>Webseiten-Verknüpfungen</span></label>
+          <label><input type="checkbox" id="visible-calendar" checked><span>Kalender und Termine</span></label>
+        </div>
+      </section>
       <section class="layout-settings" aria-labelledby="layout-title">
         <h3 id="layout-title">Anordnung</h3>
         <button id="edit-widget-layout" type="button" aria-pressed="false">Layout bearbeiten</button>
+        <button id="reset-window-sizes" type="button">Standardfenstergrößen wiederherstellen</button>
         <button id="reset-widget-layout" type="button">Standardanordnung wiederherstellen</button>
-        <p id="layout-help" class="hint">Widgets an ihrer Griffleiste frei verschieben. Pfeiltasten: 10 Pixel; mit Umschalt: 1 Pixel. Überlappungen sind möglich. Escape bricht einen Zug ab.</p>
+        <p id="layout-help" class="hint">An der Griffleiste verschieben; an Rändern und Ecken die Fenstergröße ziehen. Schrift bleibt dabei gleich. Pfeiltasten: 10 Pixel, mit Umschalt: 1 Pixel. Escape verwirft einen laufenden Zug. Überlappungen sind möglich.</p>
         <p id="layout-status" class="hint" role="status" aria-live="polite"></p>
       </section>
       <section class="widget-settings" aria-labelledby="widget-size-title">
-        <h3 id="widget-size-title">Widgetgrößen</h3>
-        <p class="hint">Kleiner oder größer – die Vorschau ändert sich sofort.</p>
+        <h3 id="widget-size-title">Schriftgröße</h3>
+        <p class="hint">Schrift unabhängig von der Fenstergröße einstellen.</p>
         <div class="widget-size-control">
           <div class="size-label"><label for="size-tasks">Aufgabenliste</label><output id="size-tasks-value" for="size-tasks">100 %</output></div>
           <input id="size-tasks" type="range" min="75" max="150" step="5" value="100" aria-describedby="widget-size-help">
@@ -134,8 +148,8 @@
           <div class="size-label"><label for="size-calendar">Kalender und Termine</label><output id="size-calendar-value" for="size-calendar">100 %</output></div>
           <input id="size-calendar" type="range" min="75" max="150" step="5" value="100" aria-describedby="widget-size-help">
         </div>
-        <p id="widget-size-help" class="hint">75–150 %. Die Auswahl wird beim Loslassen oder per Pfeiltaste lokal gespeichert. In schmalen Fenstern passt sich die Anordnung dem verfügbaren Platz an.</p>
-        <button id="reset-widget-sizes" type="button">Standardgrößen wiederherstellen</button>
+        <p id="widget-size-help" class="hint">75–150 %. Lokal speichern beim Loslassen oder per Pfeiltaste. Breite und Höhe ziehst du im Modus „Layout bearbeiten“ an den Fensterrändern.</p>
+        <button id="reset-widget-sizes" type="button">Standardschriftgrößen wiederherstellen</button>
         <p id="widget-size-status" class="hint" role="status" aria-live="polite"></p>
       </section>
       <section aria-labelledby="background-title">
@@ -159,7 +173,7 @@
     </details>
     <span id="layout-feedback" class="layout-feedback" role="status" aria-live="polite" hidden></span>
     <button id="finish-widget-layout" type="button" hidden>Layout fertig</button>
-    <span class="privacy-note"><span aria-hidden="true">●</span> Nur lokal. Nur für dich.</span>
+    <span class="privacy-note"><span aria-hidden="true">●</span> Nur lokal.</span>
   </footer>
   <p id="status" class="status" role="status" aria-live="polite"></p>
   <noscript>Bitte aktiviere JavaScript, um Ruhe Tab zu verwenden.</noscript>

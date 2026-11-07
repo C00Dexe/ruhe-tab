@@ -25,6 +25,7 @@ const ids=['tasks','greeting','clock','goal','links','calendar'];
  await page.locator('#task-input').fill('Eine wichtige Aufgabe erledigen');await page.locator('#task-form button').click();
  await page.locator('#goal-input').fill('Zeit für das Wesentliche nehmen');await page.locator('#goal-form button').click();
  await page.locator('#add-shortcut').click();await page.locator('#shortcut-name').fill('Wikipedia');await page.locator('#shortcut-url').fill('de.wikipedia.org');await page.locator('#shortcut-form button[type=submit]').click();
+ await page.locator('summary').click();await page.locator('#edit-widget-layout').click();await page.locator('#finish-widget-layout').click();
  const appState=await page.evaluate(()=>localStorage.getItem('ruhe-tab-v1'));
  const target={tasks:'.tasks-panel',greeting:'.greeting-widget',clock:'.clock-widget',goal:'.goal-section',links:'.shortcut-icon',calendar:'.calendar-widget'};
  const font={tasks:'.task-list label span',greeting:'#greeting',clock:'#clock',goal:'#goal-input',links:'.shortcut-label',calendar:'#calendar-title'};
@@ -37,7 +38,7 @@ const ids=['tasks','greeting','clock','goal','links','calendar'];
  // Preview must change layout without writing to storage on each pointer movement.
  await set('tasks',150,false);
  assert.equal(await page.evaluate(key=>localStorage.getItem(key),KEY),null);
- assert((await box('tasks')).width>defaults.tasks.box.width*1.4);
+ assert.equal((await box('tasks')).width,defaults.tasks.box.width);
  assert((await size('tasks'))>defaults.tasks.font*1.4);
  await set('tasks',150);
  assert.equal(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),KEY)).tasks,150);
@@ -46,7 +47,7 @@ const ids=['tasks','greeting','clock','goal','links','calendar'];
  for(const name of ['greeting','clock','goal','links','calendar']) {
   await set(name,150);
   assert((await size(name))>defaults[name].font*1.2,`${name} font grows`);
-  assert((await box(name)).height>defaults[name].box.height,`${name} height grows`);
+  assert.equal((await box(name)).height,defaults[name].box.height,`${name} window height stays fixed`);
  }
  assert.equal(await page.locator('#widget-size-title').evaluate(el=>getComputedStyle(el).fontSize),panelFont);
  await page.locator('#close-appearance').click();
@@ -63,8 +64,9 @@ const ids=['tasks','greeting','clock','goal','links','calendar'];
  await second.locator('summary').click();await second.locator('#size-tasks').evaluate(el=>{el.value='75';el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});
  await page.waitForFunction(()=>document.getElementById('size-tasks').value==='75');
  assert.equal(await page.locator('#size-greeting').inputValue(),'145');
- assert((await box('tasks')).width<defaults.tasks.box.width*.8);
- // Sizes must reflow without overlap or horizontal scrolling at narrow and intermediate widths.
+ assert.equal((await box('tasks')).width,defaults.tasks.box.width);
+ // Standard flow still fits at the font extremes.
+ await page.locator('#reset-widget-layout').click();
  await page.locator('#close-appearance').click();
  for(const width of [320,390,800,1000,1100,1440]) {
   await page.setViewportSize({width,height:900});
@@ -97,7 +99,7 @@ const ids=['tasks','greeting','clock','goal','links','calendar'];
  await context.setOffline(true);await set('greeting',125);assert.equal(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),KEY)).greeting,125);await context.setOffline(false);
  assert.deepEqual(external,[]);assert.deepEqual(errors,[]);
  await page.setViewportSize({width:1440,height:1000});await page.locator('#reset-widget-sizes').click();await page.locator('#close-appearance').click();await page.screenshot({path:path.join(artifacts,'default.png'),fullPage:true});
- const results=['Independent live sizing for all six widgets changes rendered dimensions and typography.','Preview does not persist until change; reopening and reloading preserve saved sizes.','Native keyboard controls, cross-tab synchronization and independent field merging work.','75% and 150% layouts fit 320, 390, 800, 1000, 1100 and 1440px without widget overlap or horizontal scrolling.','Customization controls stay unscaled and scrollable; reset affects sizes only.','Malformed settings, out-of-range values and failed storage writes are handled.','Name, goal, tasks and links survive all size changes; offline operation has no external requests or runtime errors.'];
+ const results=['Independent font sizing for all six widgets preserves explicit window dimensions.','Preview does not persist until change; reopening and reloading preserve saved sizes.','Native keyboard controls, cross-tab synchronization and independent field merging work.','75% and 150% layouts fit 320, 390, 800, 1000, 1100 and 1440px without widget overlap or horizontal scrolling.','Customization controls stay unscaled and scrollable; reset affects sizes only.','Malformed settings, out-of-range values and failed storage writes are handled.','Name, goal, tasks and links survive all size changes; offline operation has no external requests or runtime errors.'];
  console.log(JSON.stringify({results,artifacts},null,2));fs.writeFileSync(path.join(artifacts,'results.json'),JSON.stringify(results,null,2));
  }finally{await browser.close();await new Promise(r=>server.close(r))}
 })().catch(e=>{console.error(e);process.exitCode=1});

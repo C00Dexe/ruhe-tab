@@ -12,13 +12,13 @@
   function read() {
     const saved = JSON.parse(localStorage.getItem(KEY));
     if (saved === null) return defaults();
-    if (!saved || typeof saved !== "object" || Array.isArray(saved)) throw new Error("Ungültige Widgetgrößen");
+    if (!saved || typeof saved !== "object" || Array.isArray(saved)) throw new Error("Ungültige Schriftgrößen");
     return Object.fromEntries(names.map(name => [name, bounded(saved[name])]));
   }
   function render(values) {
     for (const name of names) {
       const value = bounded(values[name]);
-      document.documentElement.style.setProperty(`--${name}-scale`, String(value / 100));
+      document.documentElement.style.setProperty(`--${name}-font-scale`, String(value / 100));
       inputs[name].value = String(value);
       document.getElementById(`size-${name}-value`).value = `${value} %`;
       inputs[name].setAttribute("aria-valuetext", `${value} Prozent`);
@@ -29,13 +29,13 @@
     try { render(read()); }
     catch {
       render(defaults());
-      status("Gespeicherte Widgetgrößen konnten nicht gelesen werden. Die Standardgrößen werden angezeigt.");
+      status("Gespeicherte Schriftgrößen konnten nicht gelesen werden. Die Standardgrößen werden angezeigt.");
     }
   }
   for (const name of names) {
     inputs[name].addEventListener("input", () => {
       const value = bounded(Number(inputs[name].value));
-      document.documentElement.style.setProperty(`--${name}-scale`, String(value / 100));
+      document.documentElement.style.setProperty(`--${name}-font-scale`, String(value / 100));
       document.getElementById(`size-${name}-value`).value = `${value} %`;
       inputs[name].setAttribute("aria-valuetext", `${value} Prozent`);
       document.dispatchEvent(new Event("ruhe-widget-sizes-change"));
@@ -50,10 +50,10 @@
         latest[name] = value;
         localStorage.setItem(KEY, JSON.stringify(latest));
         render(latest);
-        status("Widgetgröße lokal gespeichert.");
+        status("Schriftgröße lokal gespeichert.");
       } catch {
         restore();
-        status("Die Größe konnte nicht gespeichert werden. Die zuletzt gespeicherten Größen werden angezeigt.");
+        status("Die Schriftgröße konnte nicht gespeichert werden. Die zuletzt gespeicherten Größen werden angezeigt.");
       }
     });
   }
@@ -61,10 +61,10 @@
     try {
       localStorage.removeItem(KEY);
       render(defaults());
-      status("Alle Widgetgrößen sind wieder auf 100 Prozent eingestellt.");
+      status("Alle Schriftgrößen sind wieder auf 100 Prozent eingestellt.");
     } catch {
       restore();
-      status("Die Größen konnten nicht zurückgesetzt werden. Bitte versuche es erneut.");
+      status("Die Schriftgrößen konnten nicht zurückgesetzt werden. Bitte versuche es erneut.");
     }
   });
   window.addEventListener("storage", event => {

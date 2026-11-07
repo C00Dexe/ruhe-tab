@@ -1,0 +1,68 @@
+// Chromium integration test: real pointer capture, local storage and preserved user content.
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');const http=require('node:http');const path=require('node:path');const os=require('node:os');
+const root=path.resolve(__dirname,'../ruhe-tab'),KEY='ruhe-tab-widget-windows-v1';
+const names=['clock','greeting','goal','tasks','links','calendar'];
+const artifacts=fs.mkdtempSync(path.join(os.tmpdir(),'ruhe-tab-window-tests-'));
+(async()=>{
+ const policy=JSON.parse(fs.readFileSync(root+'/manifest.json')).content_security_policy.extension_pages;
+ const files=['newtab.html','styles.css','newtab.js','appearance.js','widget-sizes.js','widget-layout.js','calendar.mjs','calendar-model.mjs'];
+ const server=http.createServer((req,res)=>{const file=req.url.slice(1)||'newtab.html';if(!files.includes(file)){res.writeHead(404);res.end();return}res.writeHead(200,{'Content-Type':file.endsWith('.html')?'text/html':file.endsWith('.css')?'text/css':'text/javascript','Content-Security-Policy':policy});res.end(fs.readFileSync(root+'/'+file))});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||chromium.executablePath(),headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--disable-crashpad','--no-zygote']});
+ try{
+ const context=await browser.newContext({viewport:{width:1440,height:1000}}),errors=[],external=[];
+ context.on('page',p=>p.on('pageerror',e=>errors.push(e.message)));context.on('request',r=>{if(/^https?:/.test(r.url())&&!r.url().startsWith('http://127.0.0.1:'))external.push(r.url())});
+ const url=`http://127.0.0.1:${server.address().port}/newtab.html`;const page=await context.newPage();await page.goto(url);await page.waitForFunction(()=>document.body.dataset.background==='forest');
+ const frame=(name,p=page)=>p.locator('.layout-frame[data-widget='+name+']');
+ const state=async(p=page)=>JSON.parse(await p.evaluate(key=>localStorage.getItem(key),KEY));
+ async function menu(p=page){await p.bringToFront();if(!await p.locator('#personalization').evaluate(el=>el.open))await p.locator('summary').click()}
+ async function close(p=page){await p.locator('#close-appearance').click()}
+ async function edit(p=page){await menu(p);await p.locator('#edit-widget-layout').click();await p.waitForFunction(()=>document.body.classList.contains('layout-editing'));await p.evaluate(()=>new Promise(requestAnimationFrame))}
+ async function resize(name,edge,dx,dy){const grip=frame(name).locator('.resize-'+edge);await grip.focus();const b=await grip.boundingBox();await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();await page.mouse.move(b.x+b.width/2+dx,b.y+b.height/2+dy,{steps:6});await page.mouse.up()}
+ async function bounded(p=page){return p.evaluate(()=>{const a=document.querySelector('main').getBoundingClientRect();return [...document.querySelectorAll('.layout-frame:not([hidden])')].every(el=>{const r=el.getBoundingClientRect();return r.left>=a.left-1&&r.top>=a.top-1&&r.right<=a.right+1&&r.bottom<=a.bottom+1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1})})}
+ assert.equal(await page.getByText('Nur lokal.',{exact:false}).count(),1);assert.equal(await page.getByText('Nur für dich.',{exact:false}).count(),0);
+ await menu();await page.locator('#name-input').fill('Alex');await page.locator('#name-form button').click();await page.locator('#task-input').fill('Bleibt erhalten');await page.locator('#task-form button').click();await page.locator('#goal-input').fill('Mein Ziel');await page.locator('#goal-form button').click();
+ await page.locator('#add-shortcut').click();await page.locator('#shortcut-name').fill('Wikipedia');await page.locator('#shortcut-url').fill('de.wikipedia.org');await page.locator('#shortcut-form button[type=submit]').click();
+ await page.locator('#calendar-add').click();await page.locator('#appointment-title').fill('Mein Termin');await page.locator('#appointment-date').fill('2099-01-01');await page.locator('#appointment-save').click();
+ const content=await page.evaluate(()=>({app:localStorage.getItem('ruhe-tab-v1'),events:Object.fromEntries(Object.keys(localStorage).filter(k=>k.startsWith('ruhe-tab-calendar-event.')).map(k=>[k,localStorage.getItem(k)]))}));
+ // Hide/re-add in the standard arrangement, including all-hidden recovery.
+ await menu();for(const name of names)await page.locator('#visible-'+name).uncheck();await close();assert(await page.locator('#widgets-empty').isVisible());await page.reload();assert(await page.locator('#widgets-empty').isVisible());assert.equal(await page.locator('.clock-widget').isVisible(),false);await page.locator('#show-widget-settings').click();assert(await page.locator('#visible-clock').isVisible());
+ for(const name of names)await page.locator('#visible-'+name).check();await close();assert(await page.locator('#widgets-empty').isHidden());
+ await edit();assert.equal(await page.locator('.layout-frame').count(),6);assert(await bounded());
+ // Move tasks into the top-left to leave enough room for resizing both dimensions.
+ const move=frame('tasks').locator('.layout-handle');await move.focus();let b=await move.boundingBox();await page.mouse.move(b.x+20,b.y+15);await page.mouse.down();await page.mouse.move(35,120,{steps:6});await page.mouse.up();
+ const before=await frame('tasks').boundingBox(),font=await page.locator('#task-input').evaluate(el=>getComputedStyle(el).fontSize);
+ await resize('tasks','se',180,120);let after=await frame('tasks').boundingBox();assert(after.width>before.width+100);assert(after.height>before.height+60);assert.equal(await page.locator('#task-input').evaluate(el=>getComputedStyle(el).fontSize),font);assert((await state()).sizes.tasks.custom);
+ // Left and top edges keep the opposite edge fixed.
+ const oldRight=after.x+after.width,oldBottom=after.y+after.height;await resize('tasks','nw',50,40);after=await frame('tasks').boundingBox();assert(Math.abs(after.x+after.width-oldRight)<2);assert(Math.abs(after.y+after.height-oldBottom)<2);
+ // Cancelling a size preview must leave the saved state and frame unchanged.
+ const stable=await state(),stableBox=await frame('tasks').boundingBox();const corner=frame('tasks').locator('.resize-se');await corner.focus();b=await corner.boundingBox();await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();await page.mouse.move(b.x+70,b.y+70,{steps:3});assert.deepEqual(await state(),stable);await page.keyboard.press('Escape');await page.mouse.up();assert.deepEqual(await state(),stable);assert.deepEqual(await frame('tasks').boundingBox(),stableBox);
+ await frame('tasks').locator('.resize-e').focus();await page.keyboard.press('ArrowRight');assert(Math.abs((await frame('tasks').boundingBox()).width-stableBox.width-10)<2);
+ const savedSize=(await state()).sizes.tasks,savedPoint=(await state()).positions.tasks;
+ // Close a widget in its toolbar; restoring it keeps dimensions and coordinates.
+ await frame('tasks').locator('.widget-hide').focus();await frame('tasks').locator('.widget-hide').click();assert(await frame('tasks').isHidden());await menu();await page.locator('#visible-tasks').check();await close();assert.deepEqual((await state()).sizes.tasks,savedSize);assert.deepEqual((await state()).positions.tasks,savedPoint);assert(await frame('tasks').isVisible());
+ await page.locator('#finish-widget-layout').click();assert(await frame('tasks').locator('.resize-e').isHidden());
+ await page.reload();await page.waitForFunction(()=>document.querySelectorAll('.layout-frame').length===6);assert.deepEqual((await state()).sizes.tasks,savedSize);assert.equal(await page.locator('#task-list li').count(),1);
+ // Font changes never resize an explicit window.
+ await menu();const sizeBefore=await frame('tasks').boundingBox();await page.locator('#size-tasks').evaluate(el=>{el.value='150';el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))});await close();const sizeAfter=await frame('tasks').boundingBox();assert.equal(sizeAfter.width,sizeBefore.width);assert.equal(sizeAfter.height,sizeBefore.height);assert(parseFloat(await page.locator('#task-input').evaluate(el=>getComputedStyle(el).fontSize))>parseFloat(font));
+ const stableDimensions=(await state()).sizes.tasks;
+ for(const viewport of [{width:320,height:568},{width:390,height:844},{width:800,height:600},{width:1440,height:1000}]){await page.setViewportSize(viewport);await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));assert(await bounded());assert.deepEqual((await state()).sizes.tasks,stableDimensions);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))}
+ // Resize to both limits, then restore the useful size.
+ await edit();await resize('tasks','se',-2000,-2000);let limit=await frame('tasks').boundingBox();assert(limit.width>=220&&limit.height>=180);await resize('tasks','se',2000,2000);assert(await bounded());
+ await page.locator('#finish-widget-layout').click();await menu();await page.locator('#reset-window-sizes').click();assert.equal((await state()).sizes.tasks.custom,false);assert.equal(await page.locator('#size-tasks').inputValue(),'150');
+ await close();await edit();await resize('tasks','se',80,70);await page.locator('#finish-widget-layout').click();const customSize=(await state()).sizes.tasks;await menu();await page.locator('#reset-widget-layout').click();assert.deepEqual((await state()).sizes.tasks,customSize);await close();
+ // Another tab receives visibility and window sizes.
+ const second=await context.newPage();await second.goto(url);await second.waitForFunction(()=>document.querySelectorAll('.layout-frame').length===6);await menu(second);await second.locator('#visible-calendar').uncheck();await page.waitForFunction(()=>document.querySelector('.layout-frame[data-widget=calendar]').hidden);await page.bringToFront();await edit();await resize('tasks','e',-30,0);const sharedWidth=(await state()).sizes.tasks.w;await second.waitForFunction(width=>Math.abs(document.querySelector('.layout-frame[data-widget=tasks]').offsetWidth-width)<2,sharedWidth);await page.locator('#finish-widget-layout').click();await second.close();
+ await page.bringToFront();await menu();await page.locator('#visible-calendar').check();await close();
+ // A failed state write restores the previous visibility/dimensions and reports an error.
+ await menu();const beforeFailure=await state();await page.evaluate(()=>{window.originalSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k==='ruhe-tab-widget-windows-v1')throw new DOMException('Test','QuotaExceededError');return window.originalSet.call(this,k,v)}});await page.locator('#visible-tasks').click();assert.deepEqual(await state(),beforeFailure);assert(await page.locator('#visible-tasks').isChecked());assert.match(await page.locator('#layout-status').textContent(),/nicht gespeichert/);await page.evaluate(()=>Storage.prototype.setItem=window.originalSet);await close();
+ // None of the management operations changed user content.
+ assert.deepEqual(await page.evaluate(()=>({app:localStorage.getItem('ruhe-tab-v1'),events:Object.fromEntries(Object.keys(localStorage).filter(k=>k.startsWith('ruhe-tab-calendar-event.')).map(k=>[k,localStorage.getItem(k)]))})),content);
+ await page.screenshot({path:path.join(artifacts,'windows.png'),fullPage:true});await edit();await page.screenshot({path:path.join(artifacts,'editing.png'),fullPage:true});await page.setViewportSize({width:390,height:844});await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));assert(await bounded());await page.screenshot({path:path.join(artifacts,'mobile.png'),fullPage:true});
+ await page.locator('#finish-widget-layout').click();await context.setOffline(true);await menu();await page.locator('#visible-links').uncheck();assert.equal((await state()).visible.links,false);await context.setOffline(false);
+ await page.evaluate(key=>localStorage.setItem(key,'{broken'),KEY);await page.reload();assert.equal(await page.locator('.layout-frame').count(),0);assert.match(await page.locator('#layout-status').textContent(),/nicht gelesen/);assert.deepEqual(await page.evaluate(()=>({app:localStorage.getItem('ruhe-tab-v1'),events:Object.fromEntries(Object.keys(localStorage).filter(k=>k.startsWith('ruhe-tab-calendar-event.')).map(k=>[k,localStorage.getItem(k)]))})),content);
+ assert.deepEqual(external,[]);assert.deepEqual(errors,[]);
+ const results=['All six widget types can be hidden and restored, including all-hidden recovery.','Real corner/edge resizing changes width and height independently; font size remains unchanged.','North/west resizing keeps opposite edges fixed; Escape cancels previews without writes.','Keyboard resizing works; resize handles only appear in edit mode.','Hidden widgets retain size, position and content; reload preserves windows.','Font sliders change text without changing explicit window dimensions.','Window shrinking clamps display but preserves requested dimensions for later restoration.','Minimum/maximum bounds, independent resets, cross-tab visibility and failed writes are handled.','Tasks, goal, name, links and appointments remain unchanged; offline operation has no external requests or page errors.'];console.log(JSON.stringify({results,artifacts},null,2));fs.writeFileSync(path.join(artifacts,'results.json'),JSON.stringify(results,null,2));
+ }finally{await browser.close();await new Promise(r=>server.close(r))}
+})().catch(e=>{console.error(e);process.exitCode=1});
