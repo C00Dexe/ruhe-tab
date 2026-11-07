@@ -1,35 +1,41 @@
-# Chrome-Prüfbericht – Version 1.5.0
+# Chrome-Prüfbericht – Version 1.6.0
 
-Die Originaldateien liefen für die automatisierten Tests mit Playwright und Chromium 154 über einen ausschließlich lokalen Testserver mit der Sicherheitsrichtlinie aus dem Manifest. Der Testserver gehört nicht zur Erweiterung.
+Die Originaldateien wurden mit Playwright und Chromium 154 über einen ausschließlich lokalen Testserver mit der Sicherheitsrichtlinie aus dem Manifest geprüft. Der Testserver gehört nicht zur Erweiterung. Die Kalenderprüfung verwendete die Zeitzone Europe/Berlin und kontrollierte Browserzeiten.
 
-## Freie Anordnung
+## Kalender- und Terminlogik
 
-Testskript: `tests/chrome-widget-layout.cjs` (Playwright und Chromium; optional `CHROMIUM_PATH`).
+`node tests/calendar-model.test.mjs`: **6 Tests erfolgreich, 0 fehlgeschlagen**.
 
-Erfolgreich geprüft:
+Geprüft: gültige Datumswerte, Schaltjahre einschließlich Jahrhundertregeln, Montag als Wochenanfang, Monatslängen, Navigation über Monats- und Jahresgrenzen, Datumsgrenzen, Titel und optionale Uhrzeiten, chronologische Reihenfolge und ganztägige Termine sowie die Bestimmung nächster Termine anhand der lokalen Uhrzeit. Bürgerliche Datumswerte werden bei der Darstellung nicht durch eine UTC-/Ortszeit-Umrechnung auf den Vortag verschoben.
 
-- Alle fünf Widgets werden in unabhängige verschiebbare Rahmen übernommen. Vorhandene DOM-Knoten, Eingaben und ihre Ereignisbehandlung bleiben erhalten.
-- Echte Maus-Pointer-Ereignisse mit Pointer Capture verschieben Widgets. Während des Ziehens bleibt der gespeicherte Datensatz unverändert; erst beim Ablegen wird gespeichert. Escape verwirft einen laufenden Zug.
-- Pfeiltasten und die präzise Umschalt-Variante verschieben Widgets. Enter bzw. „Layout fertig“ beendet den Bearbeitungsmodus. Die freie Anordnung bleibt aktiv.
-- Speichern und Neuladen stellen die freie Anordnung mit ausgeschalteter Bearbeitung wieder her. Textfelder, Aufgaben und Webseiten-Verknüpfungen bleiben nutzbar.
-- Frames bleiben bei 320, 390, 800 und 1440 Pixeln Fensterbreite, bei Größenänderungen und bei zusätzlichem Aufgabeninhalt innerhalb des Arbeitsbereichs. Fensteränderungen überschreiben keine gespeicherten Koordinaten.
-- Geöffnete Tabs übernehmen gespeicherte Positionsänderungen und das Zurücksetzen. Reset der Anordnung bewahrt Widgetgrößen, Name, Tagesziel, Aufgaben und Webseiten.
-- Simulierte fehlgeschlagene Schreibzugriffe stellen die zuletzt gespeicherte Anordnung wieder her und melden den Fehler auch bei geschlossenem Anpassungsfeld. Beschädigte gespeicherte Layoutdaten fallen auf die Standardanordnung zurück.
-- Touch-Verschieben mit tatsächlich ausgelösten Touch-/Pointer-Ereignissen funktioniert.
-- Eine instrumentierte Prüfung beobachtete während der Ruhephase keine fortlaufende JavaScript-Animationsschleife.
-- Offline-Bedienung funktioniert. Während der Bedienprüfung wurden keine externen Anfragen oder unbehandelten JavaScript-Fehler beobachtet.
+## Kalender im Browser
 
-Die Darstellung im freien Modus, beim Bearbeiten sowie in einem schmalen Fenster wurde zusätzlich visuell geprüft. Überlappungen sind absichtlich zulässig. Rahmen lassen sich durch Anklicken oder Tastaturfokus nach vorne holen. Zu hohe Widgets sind innen scrollbar. Bei erstmaliger Aktivierung wird, wenn ausreichend Platz vorhanden ist, eine lesbare Startanordnung gewählt; spätere Züge sind frei.
+`tests/chrome-calendar.cjs` erfolgreich:
 
-Die Anordnung wird separat unter `ruhe-tab-widget-layout-v1` in localStorage gespeichert. Die Positionen sind relativ zum verfügbaren Arbeitsbereich. Die Umsetzung verwendet Pointer Events, ResizeObserver und ereignisgesteuerte Layoutaktualisierungen. Es gibt keine zusätzliche regelmäßige Abfrage, keine neuen Berechtigungen und keinen Hintergrundprozess.
+- Monatsansicht, Tagesauswahl, Heute-Button, Monatswechsel, Schaltjahr und Tastaturnavigation.
+- Ganztägige Termine und Termine mit Uhrzeit anlegen, bearbeiten und löschen; Wiederherstellung nach Neuladen.
+- Die nächsten Termine werden chronologisch angezeigt; vergangene Termine verschwinden aus der Vorschau, bleiben aber am jeweiligen Datum erhalten.
+- Ungültige Eingaben werden abgefangen. HTML-artige Titel werden als Text dargestellt.
+- Fehlgeschlagene Schreib- und Löschzugriffe erhalten Daten und Formulareingaben und zeigen einen Fehler.
+- Unabhängige Hinzufügungen in zwei Tabs überschreiben keine anderen Termine. Ein im anderen Tab gelöschter Termin wird beim Speichern nicht versehentlich wieder angelegt.
+- Offline-Speicherung und Aktualisierung nach Minuten-/Tageswechsel über das Ereignis des bereits vorhandenen Uhr-Timers.
+- Kalendergröße und freie Position bei 320, 390, 800 und 1440 Pixeln Fensterbreite; kein horizontaler Überlauf.
+- Beschädigte einzelne Datensätze bleiben gespeichert und erzeugen einen Hinweis. Die übrigen Termine bleiben nutzbar.
+- Grenze von 500 Terminen sowie Vorschau der nächsten fünf Termine; Löschen gibt Platz frei.
+- Alte Größen- und Positionsdatensätze mit fünf Widgets bleiben erhalten. Der Kalender erhält einen eigenen Ausgangswert; das spätere Speichern seiner Position erhält die anderen fünf Positionen. Das Zurücksetzen der Anordnung erhält Termine.
+- Keine externen Anfragen und keine unbehandelten JavaScript-Fehler während der Bedienprüfung.
 
-## Bestehende Funktionen
+Die Darstellung wurde zusätzlich visuell geprüft. Termine liegen einzeln unter `ruhe-tab-calendar-event.<ID>` in localStorage des Browserprofils. Es gibt keinen neuen Timer, keine externe API, keinen Hintergrundprozess und keine zusätzlichen Berechtigungen.
 
-`tests/chrome-widget-sizes.cjs` wurde erneut erfolgreich ausgeführt: fünf unabhängige Größenregler, Vorschau, Speicherung, Tastaturbedienung, Abgleich zwischen Tabs, Zurücksetzen, Fehlerfälle und Anordnung bei 75/150 Prozent sowie 320–1440 Pixeln Fensterbreite im Standardlayout.
+## Vorhandene Funktionen
 
-`tests/chrome-backgrounds.cjs` wurde erneut erfolgreich ausgeführt: echte IndexedDB-Speicherung, proportionale Bildanpassung, Neuladen ohne erneute Bildverarbeitung, Übernahme alter Bilder, Abgleich zwischen Tabs, Offline-Bedienung und Fehlerfälle.
+Die Browserprüfungen wurden mit den neuen Dateien erneut erfolgreich ausgeführt:
 
-JavaScript-Syntax und HTML-Struktur wurden zusätzlich geprüft: eindeutige IDs, alle Skripte vorhanden. Die Inhalte- und Hintergrundlogik in `newtab.js` und `appearance.js` blieb unverändert.
+- `tests/chrome-widget-sizes.cjs`: unabhängige Größenregler für sechs Widgets, Vorschau, Speicherung, Tastatur, Abgleich zwischen Tabs, Reset, Fehlerfälle und Standardanordnung bei 75/150 Prozent sowie 320–1440 Pixeln Fensterbreite.
+- `tests/chrome-widget-layout.cjs`: freie Anordnung von sechs Widgets, Maus, Touch und Tastatur, Abbruch, Speicherung/Neuladen, Begrenzung auf den Arbeitsbereich, Fensterwechsel, bestehende Größen, Reset, Fehlerfälle und keine dauernde Animationsschleife. Die alte Fünf-Widget-Konfiguration wird als Kompatibilitätsfall weiter geprüft.
+- `tests/chrome-backgrounds.cjs`: echte IndexedDB-Speicherung, proportionale Bildanpassung, Wiederherstellung, Übernahme alter Bilder, Abgleich zwischen Tabs, Offline-Bedienung und Fehlerfälle.
+
+JavaScript-Syntax und HTML-Struktur wurden zusätzlich geprüft: eindeutige IDs, alle Skriptdateien vorhanden. Die Sicherheitsrichtlinie blockiert weiterhin externe Verbindungen. Der vorhandene Uhr-Timer meldet seine Aktualisierung zusätzlich an den Kalender; ein zweiter Timer wird nicht angelegt.
 
 ## Grenze der Prüfung
 

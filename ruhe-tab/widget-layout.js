@@ -7,7 +7,8 @@
     ["greeting", ".greeting-widget", "Begrüßung"],
     ["goal", ".goal-section", "Tagesziel"],
     ["tasks", ".tasks-panel", "Aufgabenliste"],
-    ["links", ".shortcuts", "Webseiten-Verknüpfungen"]
+    ["links", ".shortcuts", "Webseiten-Verknüpfungen"],
+    ["calendar", ".calendar-widget", "Kalender und Termine"]
   ];
   const stage = document.querySelector("main");
   const settings = document.getElementById("personalization");
@@ -42,7 +43,7 @@
     if (value?.version !== 1 || !value.positions || typeof value.positions !== "object") throw new Error("Ungültige Anordnung");
     const positions = {};
     for (const {name} of widgets) {
-      const point = value.positions[name];
+      const point = value.positions[name] ?? (name === "calendar" ? {x:0.65, y:0.4} : null);
       if (!point || typeof point.x !== "number" || !Number.isFinite(point.x) || typeof point.y !== "number" || !Number.isFinite(point.y)) throw new Error("Ungültige Position");
       positions[name] = {x:clamp(point.x, 0, 1), y:clamp(point.y, 0, 1)};
     }
@@ -149,14 +150,14 @@
     const gap = 16;
     const leftWidth = Math.max(...left.map(name => bounds[name].width));
     const leftHeight = left.reduce((sum, name) => sum + bounds[name].height, 0) + gap * 2;
-    const rowWidth = leftWidth + 32 + bounds.tasks.width;
-    const rowHeight = Math.max(leftHeight, bounds.tasks.height);
+    const rowWidth = leftWidth + 32 + Math.max(bounds.tasks.width, bounds.calendar.width);
+    const rowHeight = Math.max(leftHeight, bounds.tasks.height + gap + bounds.calendar.height);
     const totalHeight = rowHeight + gap + bounds.links.height;
     if (rowWidth <= area.width && bounds.links.width <= area.width && totalHeight <= area.height) {
       // Seed a readable two-column arrangement if it fits; all later moves stay unrestricted.
       const x = (area.width - Math.max(rowWidth, bounds.links.width)) / 2;
       const y = (area.height - totalHeight) / 2;
-      const points = {tasks:{x:x + leftWidth + 32, y}, links:{x, y:y + rowHeight + gap}};
+      const points = {tasks:{x:x + leftWidth + 32, y}, calendar:{x:x + leftWidth + 32, y:y + bounds.tasks.height + gap}, links:{x, y:y + rowHeight + gap}};
       let nextY = y;
       for (const name of left) { points[name] = {x, y:nextY}; nextY += bounds[name].height + gap; }
       return points;

@@ -2,7 +2,7 @@
 
 (() => {
   const KEY = "ruhe-tab-widget-sizes-v1";
-  const names = ["tasks", "greeting", "clock", "goal", "links"];
+  const names = ["tasks", "greeting", "clock", "goal", "links", "calendar"];
   const defaults = () => Object.fromEntries(names.map(name => [name, 100]));
   const inputs = Object.fromEntries(names.map(name => [name, document.getElementById(`size-${name}`)]));
   const status = message => { document.getElementById("widget-size-status").textContent = message; };

@@ -225,6 +225,7 @@
     $("clock").dateTime = now.toISOString();
     $("date").textContent = dateFormat.format(now);
     greeting(now);
+    document.dispatchEvent(new Event("ruhe-tab-time-change"));
     timer = setTimeout(refresh, 60000 - (Date.now() % 60000));
   }
 

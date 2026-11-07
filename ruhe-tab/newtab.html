@@ -10,6 +10,7 @@
   <script src="appearance.js" defer></script>
   <script src="widget-sizes.js" defer></script>
   <script src="widget-layout.js" defer></script>
+  <script type="module" src="calendar.mjs"></script>
 </head>
 <body>
   <header class="topbar"><span class="brand"><span class="brand-mark" aria-hidden="true">◒</span> RUHE TAB</span></header>
@@ -46,6 +47,21 @@
       <p id="empty-tasks" class="empty-state">Noch nichts auf deiner Liste.<br>Genieße den freien Kopf.</p>
       <p id="task-limit" class="hint" hidden>Deine Liste ist voll (50 Aufgaben). Lösche zuerst eine Aufgabe.</p>
     </aside>
+    <section class="calendar-widget" aria-labelledby="calendar-title">
+      <div class="calendar-heading"><h2 id="calendar-title">Kalender &amp; Termine</h2><button id="calendar-today" type="button">Heute</button></div>
+      <div class="calendar-navigation"><button id="calendar-previous" type="button" aria-label="Vorheriger Monat">‹</button><h3 id="calendar-month-title"></h3><button id="calendar-next" type="button" aria-label="Nächster Monat">›</button></div>
+      <table class="calendar-month" aria-labelledby="calendar-month-title">
+        <thead><tr><th scope="col" abbr="Montag">Mo</th><th scope="col" abbr="Dienstag">Di</th><th scope="col" abbr="Mittwoch">Mi</th><th scope="col" abbr="Donnerstag">Do</th><th scope="col" abbr="Freitag">Fr</th><th scope="col" abbr="Samstag">Sa</th><th scope="col" abbr="Sonntag">So</th></tr></thead>
+        <tbody id="calendar-days"></tbody>
+      </table>
+      <div class="calendar-heading calendar-day-heading"><h3 id="calendar-selected-label"></h3><button id="calendar-add" type="button" aria-label="Termin hinzufügen">+ Termin</button></div>
+      <ul id="calendar-day-events" class="calendar-events" aria-labelledby="calendar-selected-label"></ul>
+      <p id="calendar-day-empty" class="hint">Keine Termine an diesem Tag.</p>
+      <h3 class="calendar-next-title" id="calendar-upcoming-label">Nächste Termine</h3>
+      <ul id="calendar-upcoming" class="calendar-events" aria-labelledby="calendar-upcoming-label"></ul>
+      <p id="calendar-upcoming-empty" class="hint">Keine anstehenden Termine.</p>
+      <p id="calendar-status" class="hint" role="status" aria-live="polite"></p>
+    </section>
     <section class="shortcuts" aria-labelledby="shortcuts-title">
       <div class="shortcuts-heading">
         <h2 id="shortcuts-title" class="eyebrow">DEINE WEBSEITEN</h2>
@@ -66,6 +82,17 @@
       <p id="shortcut-help" class="hint">Ohne https:// ergänzen wir es automatisch. Die Adresse bleibt lokal gespeichert.</p>
       <p id="shortcut-error" role="alert"></p>
       <div class="dialog-actions"><button id="cancel-shortcut" type="button">Abbrechen</button><button type="submit">Speichern</button></div>
+    </form>
+  </dialog>
+  <dialog id="appointment-dialog" aria-labelledby="appointment-dialog-title">
+    <form id="appointment-form">
+      <h2 id="appointment-dialog-title">Termin hinzufügen</h2>
+      <label for="appointment-title">Titel</label><input id="appointment-title" maxlength="120" required autocomplete="off" autofocus>
+      <label for="appointment-date">Datum</label><input id="appointment-date" type="date" min="0001-01-01" max="9999-12-31" required>
+      <label for="appointment-time">Uhrzeit (optional)</label><input id="appointment-time" type="time">
+      <p class="hint">Ohne Uhrzeit ist der Termin ganztägig. Speicherung nur in diesem Browserprofil.</p>
+      <p id="appointment-error" role="alert"></p>
+      <div class="dialog-actions"><button id="appointment-delete" type="button" hidden>Löschen</button><button id="appointment-cancel" type="button">Abbrechen</button><button id="appointment-save" type="submit">Speichern</button></div>
     </form>
   </dialog>
   <footer>
@@ -102,6 +129,10 @@
         <div class="widget-size-control">
           <div class="size-label"><label for="size-links">Webseiten-Verknüpfungen</label><output id="size-links-value" for="size-links">100 %</output></div>
           <input id="size-links" type="range" min="75" max="150" step="5" value="100" aria-describedby="widget-size-help">
+        </div>
+        <div class="widget-size-control">
+          <div class="size-label"><label for="size-calendar">Kalender und Termine</label><output id="size-calendar-value" for="size-calendar">100 %</output></div>
+          <input id="size-calendar" type="range" min="75" max="150" step="5" value="100" aria-describedby="widget-size-help">
         </div>
         <p id="widget-size-help" class="hint">75–150 %. Die Auswahl wird beim Loslassen oder per Pfeiltaste lokal gespeichert. In schmalen Fenstern passt sich die Anordnung dem verfügbaren Platz an.</p>
         <button id="reset-widget-sizes" type="button">Standardgrößen wiederherstellen</button>

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Ruhe Tab",
-  "version": "1.5.0",
-  "description": "Dein ruhiger neuer Tab: Uhrzeit, Tagesziel, Aufgaben und eigene Webseiten-Verknüpfungen. Lokal gespeichert.",
+  "version": "1.6.0",
+  "description": "Dein ruhiger neuer Tab: Uhrzeit, Tagesziel, Aufgaben, Kalender und Webseiten. Ausschließlich lokal gespeichert.",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },

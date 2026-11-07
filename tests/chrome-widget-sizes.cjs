@@ -8,10 +8,10 @@ const os=require('node:os');
 const root=path.resolve(__dirname,'../ruhe-tab');
 const artifacts=fs.mkdtempSync(path.join(os.tmpdir(),'ruhe-tab-widget-tests-'));
 const KEY='ruhe-tab-widget-sizes-v1';
-const ids=['tasks','greeting','clock','goal','links'];
+const ids=['tasks','greeting','clock','goal','links','calendar'];
 (async()=>{
  const manifest=JSON.parse(fs.readFileSync(root+'/manifest.json'));
- const server=http.createServer((req,res)=>{const name=req.url.slice(1)||'newtab.html';if(!['newtab.html','newtab.js','appearance.js','widget-sizes.js','widget-layout.js','styles.css'].includes(name)){res.writeHead(404);res.end();return}res.writeHead(200,{'Content-Type':name.endsWith('.html')?'text/html':name.endsWith('.css')?'text/css':'text/javascript','Content-Security-Policy':manifest.content_security_policy.extension_pages});res.end(fs.readFileSync(root+'/'+name))});
+ const server=http.createServer((req,res)=>{const name=req.url.slice(1)||'newtab.html';if(!['newtab.html','newtab.js','appearance.js','widget-sizes.js','widget-layout.js','calendar.mjs','calendar-model.mjs','styles.css'].includes(name)){res.writeHead(404);res.end();return}res.writeHead(200,{'Content-Type':name.endsWith('.html')?'text/html':name.endsWith('.css')?'text/css':'text/javascript','Content-Security-Policy':manifest.content_security_policy.extension_pages});res.end(fs.readFileSync(root+'/'+name))});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||chromium.executablePath(),headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--disable-crashpad','--no-zygote']});
  try {
@@ -26,8 +26,8 @@ const ids=['tasks','greeting','clock','goal','links'];
  await page.locator('#goal-input').fill('Zeit für das Wesentliche nehmen');await page.locator('#goal-form button').click();
  await page.locator('#add-shortcut').click();await page.locator('#shortcut-name').fill('Wikipedia');await page.locator('#shortcut-url').fill('de.wikipedia.org');await page.locator('#shortcut-form button[type=submit]').click();
  const appState=await page.evaluate(()=>localStorage.getItem('ruhe-tab-v1'));
- const target={tasks:'.tasks-panel',greeting:'.greeting-widget',clock:'.clock-widget',goal:'.goal-section',links:'.shortcut-icon'};
- const font={tasks:'.task-list label span',greeting:'#greeting',clock:'#clock',goal:'#goal-input',links:'.shortcut-label'};
+ const target={tasks:'.tasks-panel',greeting:'.greeting-widget',clock:'.clock-widget',goal:'.goal-section',links:'.shortcut-icon',calendar:'.calendar-widget'};
+ const font={tasks:'.task-list label span',greeting:'#greeting',clock:'#clock',goal:'#goal-input',links:'.shortcut-label',calendar:'#calendar-title'};
  const box=async name=>await page.locator(target[name]).boundingBox();
  const size=async name=>await page.locator(font[name]).evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
  const defaults=Object.fromEntries(await Promise.all(ids.map(async name=>[name,{box:await box(name),font:await size(name)}])));
@@ -43,7 +43,7 @@ const ids=['tasks','greeting','clock','goal','links'];
  assert.equal(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),KEY)).tasks,150);
  assert.equal(await page.locator('#size-tasks-value').innerText(),'150 %');
  assert.equal(await size('greeting'),defaults.greeting.font);
- for(const name of ['greeting','clock','goal','links']) {
+ for(const name of ['greeting','clock','goal','links','calendar']) {
   await set(name,150);
   assert((await size(name))>defaults[name].font*1.2,`${name} font grows`);
   assert((await box(name)).height>defaults[name].box.height,`${name} height grows`);
@@ -97,7 +97,7 @@ const ids=['tasks','greeting','clock','goal','links'];
  await context.setOffline(true);await set('greeting',125);assert.equal(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),KEY)).greeting,125);await context.setOffline(false);
  assert.deepEqual(external,[]);assert.deepEqual(errors,[]);
  await page.setViewportSize({width:1440,height:1000});await page.locator('#reset-widget-sizes').click();await page.locator('#close-appearance').click();await page.screenshot({path:path.join(artifacts,'default.png'),fullPage:true});
- const results=['Independent live sizing for all five widgets changes rendered dimensions and typography.','Preview does not persist until change; reopening and reloading preserve saved sizes.','Native keyboard controls, cross-tab synchronization and independent field merging work.','75% and 150% layouts fit 320, 390, 800, 1000, 1100 and 1440px without widget overlap or horizontal scrolling.','Customization controls stay unscaled and scrollable; reset affects sizes only.','Malformed settings, out-of-range values and failed storage writes are handled.','Name, goal, tasks and links survive all size changes; offline operation has no external requests or runtime errors.'];
+ const results=['Independent live sizing for all six widgets changes rendered dimensions and typography.','Preview does not persist until change; reopening and reloading preserve saved sizes.','Native keyboard controls, cross-tab synchronization and independent field merging work.','75% and 150% layouts fit 320, 390, 800, 1000, 1100 and 1440px without widget overlap or horizontal scrolling.','Customization controls stay unscaled and scrollable; reset affects sizes only.','Malformed settings, out-of-range values and failed storage writes are handled.','Name, goal, tasks and links survive all size changes; offline operation has no external requests or runtime errors.'];
  console.log(JSON.stringify({results,artifacts},null,2));fs.writeFileSync(path.join(artifacts,'results.json'),JSON.stringify(results,null,2));
  }finally{await browser.close();await new Promise(r=>server.close(r))}
 })().catch(e=>{console.error(e);process.exitCode=1});
