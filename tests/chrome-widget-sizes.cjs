@@ -11,7 +11,7 @@ const KEY='ruhe-tab-widget-sizes-v1';
 const ids=['tasks','greeting','clock','goal','links'];
 (async()=>{
  const manifest=JSON.parse(fs.readFileSync(root+'/manifest.json'));
- const server=http.createServer((req,res)=>{const name=req.url.slice(1)||'newtab.html';if(!['newtab.html','newtab.js','appearance.js','widget-sizes.js','styles.css'].includes(name)){res.writeHead(404);res.end();return}res.writeHead(200,{'Content-Type':name.endsWith('.html')?'text/html':name.endsWith('.css')?'text/css':'text/javascript','Content-Security-Policy':manifest.content_security_policy.extension_pages});res.end(fs.readFileSync(root+'/'+name))});
+ const server=http.createServer((req,res)=>{const name=req.url.slice(1)||'newtab.html';if(!['newtab.html','newtab.js','appearance.js','widget-sizes.js','widget-layout.js','styles.css'].includes(name)){res.writeHead(404);res.end();return}res.writeHead(200,{'Content-Type':name.endsWith('.html')?'text/html':name.endsWith('.css')?'text/css':'text/javascript','Content-Security-Policy':manifest.content_security_policy.extension_pages});res.end(fs.readFileSync(root+'/'+name))});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||chromium.executablePath(),headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--disable-crashpad','--no-zygote']});
  try {

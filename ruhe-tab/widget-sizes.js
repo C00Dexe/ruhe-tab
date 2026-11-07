@@ -23,6 +23,7 @@
       document.getElementById(`size-${name}-value`).value = `${value} %`;
       inputs[name].setAttribute("aria-valuetext", `${value} Prozent`);
     }
+    document.dispatchEvent(new Event("ruhe-widget-sizes-change"));
   }
   function restore() {
     try { render(read()); }
@@ -37,6 +38,7 @@
       document.documentElement.style.setProperty(`--${name}-scale`, String(value / 100));
       document.getElementById(`size-${name}-value`).value = `${value} %`;
       inputs[name].setAttribute("aria-valuetext", `${value} Prozent`);
+      document.dispatchEvent(new Event("ruhe-widget-sizes-change"));
       status("Vorschau – beim Loslassen oder per Pfeiltaste speichern.");
     });
     inputs[name].addEventListener("change", () => {

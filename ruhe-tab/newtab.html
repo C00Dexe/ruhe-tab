@@ -9,6 +9,7 @@
   <script src="newtab.js" defer></script>
   <script src="appearance.js" defer></script>
   <script src="widget-sizes.js" defer></script>
+  <script src="widget-layout.js" defer></script>
 </head>
 <body>
   <header class="topbar"><span class="brand"><span class="brand-mark" aria-hidden="true">◒</span> RUHE TAB</span></header>
@@ -72,6 +73,13 @@
       <summary><span aria-hidden="true">⚙</span> Chrome anpassen</summary>
       <div class="settings-panel">
       <div class="appearance-heading panel-title"><h2>Chrome anpassen</h2><button id="close-appearance" type="button" aria-label="Anpassungsfeld schließen">×</button></div>
+      <section class="layout-settings" aria-labelledby="layout-title">
+        <h3 id="layout-title">Anordnung</h3>
+        <button id="edit-widget-layout" type="button" aria-pressed="false">Layout bearbeiten</button>
+        <button id="reset-widget-layout" type="button">Standardanordnung wiederherstellen</button>
+        <p id="layout-help" class="hint">Widgets an ihrer Griffleiste frei verschieben. Pfeiltasten: 10 Pixel; mit Umschalt: 1 Pixel. Überlappungen sind möglich. Escape bricht einen Zug ab.</p>
+        <p id="layout-status" class="hint" role="status" aria-live="polite"></p>
+      </section>
       <section class="widget-settings" aria-labelledby="widget-size-title">
         <h3 id="widget-size-title">Widgetgrößen</h3>
         <p class="hint">Kleiner oder größer – die Vorschau ändert sich sofort.</p>
@@ -118,6 +126,8 @@
       </form>
       </div>
     </details>
+    <span id="layout-feedback" class="layout-feedback" role="status" aria-live="polite" hidden></span>
+    <button id="finish-widget-layout" type="button" hidden>Layout fertig</button>
     <span class="privacy-note"><span aria-hidden="true">●</span> Nur lokal. Nur für dich.</span>
   </footer>
   <p id="status" class="status" role="status" aria-live="polite"></p>
