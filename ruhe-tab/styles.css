@@ -112,3 +112,50 @@ body[data-background="night"] { background: radial-gradient(ellipse at 28% 28%, 
 body[data-background="slate"] { background: radial-gradient(ellipse at 28% 28%, #333940, transparent 65%), #14181c; }
 body[data-background="image"]::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-image: linear-gradient(#0009, #000b), var(--user-image); background-size: cover; background-position: center; }
 @media (max-width: 480px) { footer .privacy-note { display: none; } }
+
+/* Independent widget sizes. Values are bounded and set only by widget-sizes.js. */
+:root { --tasks-scale: 1; --greeting-scale: 1; --clock-scale: 1; --goal-scale: 1; --links-scale: 1; }
+main { grid-template-columns: minmax(0, 1fr) calc(310px * var(--tasks-scale)); }
+.focus { min-width: 0; container-type: inline-size; }
+.clock-widget, .greeting-widget { max-width: 100%; }
+.clock-widget .eyebrow { font-size: calc(11px * var(--clock-scale)); }
+.clock { font-size: min(calc(clamp(76px, 9vw, 112px) * var(--clock-scale)), 34cqw); margin: calc(12px * var(--clock-scale)) 0 calc(18px * var(--clock-scale)); }
+.greeting-widget { width: calc(520px * var(--greeting-scale)); }
+.greeting-widget h1 { font-size: calc(clamp(25px, 3vw, 34px) * var(--greeting-scale)); }
+.greeting-widget .subtitle { font-size: calc(13px * var(--greeting-scale)); }
+.goal-section { width: calc(460px * var(--goal-scale)); max-width: 100%; }
+.goal-section .eyebrow { font-size: calc(11px * var(--goal-scale)); }
+#goal-input { font-size: calc(19px * var(--goal-scale)); padding-block: calc(12px * var(--goal-scale)); }
+.goal-section .line-form button { font-size: calc(16px * var(--goal-scale)); }
+.goal-section .completion { font-size: calc(12px * var(--goal-scale)); gap: calc(9px * var(--goal-scale)); }
+.goal-section .hint { font-size: calc(11px * var(--goal-scale)); }
+.tasks-panel { min-width: 0; padding: calc(25px * var(--tasks-scale)) calc(22px * var(--tasks-scale)); }
+.tasks-panel .panel-heading h2 { font-size: calc(16px * var(--tasks-scale)); }
+.tasks-panel .count { font-size: calc(10px * var(--tasks-scale)); padding: calc(5px * var(--tasks-scale)) calc(8px * var(--tasks-scale)); }
+.tasks-panel .panel-description, .tasks-panel .empty-state { font-size: calc(12px * var(--tasks-scale)); }
+.tasks-panel .task-form, .tasks-panel .task-list label span { font-size: calc(13px * var(--tasks-scale)); }
+.tasks-panel .task-form input { padding-block: calc(12px * var(--tasks-scale)); }
+.tasks-panel .task-form button { font-size: calc(22px * var(--tasks-scale)); }
+.tasks-panel .task-list { max-height: calc(340px * var(--tasks-scale)); }
+.tasks-panel .task-list label { padding-block: calc(12px * var(--tasks-scale)); gap: calc(10px * var(--tasks-scale)); }
+.tasks-panel .task-list button { font-size: calc(20px * var(--tasks-scale)); }
+.tasks-panel input[type="checkbox"] { width: max(18px, calc(18px * var(--tasks-scale))); height: max(18px, calc(18px * var(--tasks-scale))); }
+.goal-section input[type="checkbox"] { width: max(18px, calc(18px * var(--goal-scale))); height: max(18px, calc(18px * var(--goal-scale))); }
+.tasks-panel .hint { font-size: calc(11px * var(--tasks-scale)); }
+.shortcut-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(clamp(80px, 22vw, 140px) * var(--links-scale))), 1fr)); gap: calc(12px * var(--links-scale)); }
+.shortcut-list a { font-size: calc(12px * var(--links-scale)); padding: calc(14px * var(--links-scale)) calc(8px * var(--links-scale)); gap: calc(10px * var(--links-scale)); }
+.shortcut-icon { width: calc(42px * var(--links-scale)); height: calc(42px * var(--links-scale)); font-size: calc(18px * var(--links-scale)); border-radius: calc(14px * var(--links-scale)); }
+.shortcuts-heading .eyebrow { font-size: calc(11px * var(--links-scale)); }
+.shortcuts-heading button, .add-shortcut { font-size: calc(12px * var(--links-scale)); }
+.shortcuts .hint { font-size: calc(11px * var(--links-scale)); }
+.settings-panel h3 { font-size: 14px; font-weight: 500; margin: 0 0 8px; }
+.panel-title { margin-bottom: 16px; }
+.widget-settings { border-bottom: 1px solid #ffffff20; padding-bottom: 18px; margin-bottom: 18px; }
+.widget-size-control { margin-top: 12px; }
+.size-label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 12px; }
+.size-label output { color: var(--accent); font-variant-numeric: tabular-nums; min-width: 42px; text-align: right; }
+input[type="range"] { display: block; width: 100%; padding: 0; margin: 4px 0 0; height: 28px; accent-color: var(--accent); cursor: pointer; }
+#reset-widget-sizes { font-size: 12px; margin-top: 10px; text-align: left; padding-inline: 0; }
+#widget-size-status:empty { display: none; }
+@media (max-width: 1000px) { main { grid-template-columns: minmax(0, 1fr); } .tasks-panel { width: min(100%, calc(310px * var(--tasks-scale))); } }
+@media (max-width: 640px) { .clock { font-size: min(calc(90px * var(--clock-scale)), 34cqw); } }

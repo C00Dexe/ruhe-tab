@@ -8,15 +8,20 @@
   <link rel="stylesheet" href="styles.css">
   <script src="newtab.js" defer></script>
   <script src="appearance.js" defer></script>
+  <script src="widget-sizes.js" defer></script>
 </head>
 <body>
   <header class="topbar"><span class="brand"><span class="brand-mark" aria-hidden="true">◒</span> RUHE TAB</span></header>
   <main>
     <section class="focus" aria-label="Dein Tag">
+      <div class="clock-widget" role="group" aria-label="Uhr und Datum">
       <p id="date" class="eyebrow"></p>
       <time id="clock" class="clock" aria-label="Aktuelle Uhrzeit">--:--</time>
+      </div>
+      <div class="greeting-widget">
       <h1 id="greeting">Willkommen.</h1>
       <p class="subtitle">Weniger Ablenkung. Mehr Raum für das Wesentliche.</p>
+      </div>
       <section class="goal-section" aria-labelledby="goal-title">
         <h2 id="goal-title" class="eyebrow">WAS IST HEUTE WICHTIG?</h2>
         <form id="goal-form" class="line-form">
@@ -66,8 +71,36 @@
     <details id="personalization">
       <summary><span aria-hidden="true">⚙</span> Chrome anpassen</summary>
       <div class="settings-panel">
+      <div class="appearance-heading panel-title"><h2>Chrome anpassen</h2><button id="close-appearance" type="button" aria-label="Anpassungsfeld schließen">×</button></div>
+      <section class="widget-settings" aria-labelledby="widget-size-title">
+        <h3 id="widget-size-title">Widgetgrößen</h3>
+        <p class="hint">Kleiner oder größer – die Vorschau ändert sich sofort.</p>
+        <div class="widget-size-control">
+          <div class="size-label"><label for="size-tasks">Aufgabenliste</label><output id="size-tasks-value" for="size-tasks">100 %</output></div>
+          <input id="size-tasks" type="range" min="75" max="150" step="5" value="100" aria-describedby="widget-size-help">
+        </div>
+        <div class="widget-size-control">
+          <div class="size-label"><label for="size-greeting">Begrüßung</label><output id="size-greeting-value" for="size-greeting">100 %</output></div>
+          <input id="size-greeting" type="range" min="75" max="150" step="5" value="100" aria-describedby="widget-size-help">
+        </div>
+        <div class="widget-size-control">
+          <div class="size-label"><label for="size-clock">Uhr und Datum</label><output id="size-clock-value" for="size-clock">100 %</output></div>
+          <input id="size-clock" type="range" min="75" max="150" step="5" value="100" aria-describedby="widget-size-help">
+        </div>
+        <div class="widget-size-control">
+          <div class="size-label"><label for="size-goal">Tagesziel</label><output id="size-goal-value" for="size-goal">100 %</output></div>
+          <input id="size-goal" type="range" min="75" max="150" step="5" value="100" aria-describedby="widget-size-help">
+        </div>
+        <div class="widget-size-control">
+          <div class="size-label"><label for="size-links">Webseiten-Verknüpfungen</label><output id="size-links-value" for="size-links">100 %</output></div>
+          <input id="size-links" type="range" min="75" max="150" step="5" value="100" aria-describedby="widget-size-help">
+        </div>
+        <p id="widget-size-help" class="hint">75–150 %. Die Auswahl wird beim Loslassen oder per Pfeiltaste lokal gespeichert. In schmalen Fenstern passt sich die Anordnung dem verfügbaren Platz an.</p>
+        <button id="reset-widget-sizes" type="button">Standardgrößen wiederherstellen</button>
+        <p id="widget-size-status" class="hint" role="status" aria-live="polite"></p>
+      </section>
       <section aria-labelledby="background-title">
-        <div class="appearance-heading"><h2 id="background-title">Hintergrund</h2><button id="close-appearance" type="button" aria-label="Anpassungsfeld schließen">×</button></div>
+        <h3 id="background-title">Hintergrund</h3>
         <div class="background-presets" role="group" aria-label="Hintergrund auswählen">
           <button type="button" data-background="forest" aria-pressed="true">Wald</button>
           <button type="button" data-background="night" aria-pressed="false">Nacht</button>
