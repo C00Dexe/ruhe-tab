@@ -4,7 +4,7 @@
   const LEGACY_KEY = "ruhe-tab-appearance-v1";
   const MAX_BYTES = 10 * 1024 * 1024;
   const MAX_WIDTH = 2560, MAX_HEIGHT = 1440;
-  const presets = ["forest", "night", "slate"];
+  const presets = ["forest","night","slate","ocean","lavender","ember","sand","rose","graphite"];
   const types = ["image/jpeg", "image/png", "image/webp"];
   const buttons = Array.from(document.querySelectorAll("button[data-background]"));
   const input = document.getElementById("background-file");

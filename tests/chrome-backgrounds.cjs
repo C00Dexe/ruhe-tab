@@ -26,9 +26,30 @@ async function record(page){return page.evaluate(()=>new Promise((resolve,reject
  await page.reload();await page.waitForFunction(()=>document.body.dataset.background==='forest');
  const customize=page.locator('#personalization summary');
  async function theme(name){await page.locator('button[data-background="'+name+'"]').click();await page.waitForFunction(kind=>document.body.dataset.background===kind,name)}
- await customize.click();await theme('night');await page.reload();await page.waitForFunction(()=>document.body.dataset.background==='night');await customize.click();
- assert.deepEqual(await record(page),{kind:'night'});
- results.push('Farbverläufe bleiben nach Neuladen erhalten; Einstellungen werden in IndexedDB gespeichert.');
+ // Verify the compact bars and the settings trigger through real keyboard input.
+ for(const viewport of [{width:1360,height:900},{width:390,height:844},{width:320,height:568}]){
+  await page.setViewportSize(viewport);
+  assert.equal(Math.round((await page.locator('header').boundingBox()).height),32);
+  assert.equal(Math.round((await page.locator('footer').boundingBox()).height),40);
+  const gear=await customize.boundingBox();assert.equal(Math.round(gear.width),32);assert.equal(Math.round(gear.height),32);
+  assert.equal(await customize.getAttribute('aria-label'),'Einstellungen');
+  await customize.focus();await page.keyboard.press('Enter');assert(await page.locator('#personalization').evaluate(el=>el.open));
+  const panelBox=await page.locator('.settings-panel').boundingBox();assert(panelBox.x>=0&&panelBox.y>=0&&panelBox.x+panelBox.width<=viewport.width&&panelBox.y+panelBox.height<=viewport.height);
+  await page.keyboard.press('Escape');assert.equal(await page.locator('#personalization').evaluate(el=>el.open),false);assert(await customize.evaluate(el=>document.activeElement===el));
+ }
+ await page.setViewportSize({width:1360,height:900});
+ results.push('32px Kopfzeile, 40px Fußzeile und Zahnrad per Tastatur bei 320/390/1360px; Einstellungsfeld bleibt im Fenster.');
+ await customize.click();
+ const presets=await page.locator('.background-presets button').evaluateAll(nodes=>nodes.map(el=>el.dataset.background));
+ assert.equal(presets.length,9);assert.equal(new Set(presets).size,9);for(const oldKind of ['forest','night','slate'])assert(presets.includes(oldKind));
+ for(const preset of presets){
+  await theme(preset);assert.deepEqual(await record(page),{kind:preset});
+  assert.equal(await page.locator('.background-presets [aria-pressed="true"]').count(),1);
+  await page.reload();await page.waitForFunction(kind=>document.body.dataset.background===kind,preset);await customize.click();
+  assert.equal(await page.locator('.background-presets [aria-pressed="true"]').getAttribute('data-background'),preset);
+ }
+ await theme('night');
+ results.push('Alle neun Farbschemen werden in echter IndexedDB gespeichert, nach Neuladen wiederhergestellt und als aktive Auswahl angezeigt.');
  async function image(width,height,noisy=false){const data=await page.evaluate(({width,height,noisy})=>{const c=document.createElement('canvas');c.width=width;c.height=height;const ctx=c.getContext('2d');if(noisy){const pixels=ctx.createImageData(width,height);let seed=123;for(let i=0;i<pixels.data.length;i+=4){seed=(1664525*seed+1013904223)>>>0;pixels.data[i]=seed&255;pixels.data[i+1]=(seed>>>8)&255;pixels.data[i+2]=(seed>>>16)&255;pixels.data[i+3]=255}ctx.putImageData(pixels,0,0)}else{ctx.fillStyle='#315078';ctx.fillRect(0,0,width,height)}return c.toDataURL('image/png')},{width,height,noisy});return Buffer.from(data.split(',')[1],'base64')}
  async function upload(buffer,name='bild.png',mimeType='image/png'){await page.locator('#background-file').setInputFiles({name,mimeType,buffer});await page.waitForFunction(()=>/gespeichert|Bitte wähle|konnte|viele Pixel/.test(document.getElementById('appearance-status').textContent))}
  const large=await image(1800,1000,true);assert(large.length>1024*1024 && large.length<10*1024*1024);

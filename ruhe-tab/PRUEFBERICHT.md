@@ -1,8 +1,34 @@
-# Chrome-Prüfbericht – Version 1.7.0
+# Chrome-Prüfbericht – Version 1.8.0
+
+## Änderungen und aktuelle Prüfungen
+
+Die Kopfzeile ist auf 32 Pixel, die Fußzeile auf 40 Pixel reduziert. Ein 32 × 32 Pixel großes Zahnrad unten links öffnet das vorhandene Einstellungsfeld. Das native Details-Element erhält eine zugängliche Beschriftung; Schließen und Fokus-Rückgabe verwenden die vorhandene Bedienung.
+
+Zu Wald, Nacht und Schiefer kommen Ozean, Lavendel, Abendrot, Sand, Rosenquarz und Graphit. Alle neun Schemen verwenden lokale CSS-Verläufe und passende Akzent-, Flächen- und Griff-Farben. Die vorhandene IndexedDB-Speicherung und der Abgleich zwischen Tabs werden weiterverwendet.
+
+In dieser Sitzung erfolgreich ausgeführt:
+
+- JavaScript-Syntaxprüfung mit V8 für die geänderte Hintergrundlogik und die bestehenden Skripte für Hauptseite und Fensterverwaltung.
+- Statische Prüfung: eindeutige HTML-IDs, lokale Skriptquellen, neun übereinstimmende Auswahlkacheln, Speicherkennungen und CSS-Schemen sowie ausgeglichene CSS-Regelklammern.
+- Isolierte Ausführung der vollständigen `appearance.js` mit simuliertem DOM, IndexedDB und BroadcastChannel: alle neun Auswahlen, genau eine aktive Kachel, Wiederherstellung aus gespeichertem Zustand und Übernahme in einer zweiten Instanz.
+- Simulierter Schreibfehler: vorherige Auswahl bleibt erhalten und eine Fehlermeldung erscheint. Andere Benutzereinstellungen bleiben unverändert. Schließen gibt den Fokus an den Auslöser zurück.
+- Manifest: Version 1.8.0, unveränderte Berechtigungen und weiterhin `connect-src 'none'`. Keine zusätzlichen Skripte, Server, Timer oder Bibliotheken.
+
+## Noch nicht im Browser bestätigt
+
+Die Ausführungsumgebung konnte in dieser Sitzung nicht starten. Deshalb wurden für Version 1.8.0 weder Chromium/Playwright noch eine native Chrome-Installation ausgeführt. Die isolierten Prüfungen ersetzen keine echte IndexedDB-, CSS-, Tastatur- oder Darstellungsprüfung.
+
+`tests/chrome-backgrounds.cjs` wurde um native Tastaturbedienung des Zahnrads, die schmalen Leisten bei 320/390/1360 Pixeln, Erreichbarkeit des Einstellungsfelds und Auswahl/Wiederherstellung aller neun Farbschemen erweitert. Dieser erweiterte Browsertest ist noch auszuführen. Auch die bestehenden Fenster-, Schrift- und Kalenderprüfungen wurden für 1.8.0 nicht erneut gestartet.
+
+Die Schritte für eine Prüfung im eigenen Chrome stehen in der Anleitung unter „Kurzer Test auf deinem Rechner“.
+
+## Bisheriger Prüfstand – Version 1.7.0
+
+Die folgenden Ergebnisse stammen aus der vorherigen Version. Sie sind historische Prüfungen und keine Bestätigung der neuen Darstellung in Version 1.8.0.
 
 Die Originaldateien wurden mit Playwright und Chromium 154 über einen ausschließlich lokalen Testserver mit der Sicherheitsrichtlinie aus dem Manifest geprüft. Der Testserver gehört nicht zur Erweiterung. Die Kalenderprüfung verwendete die Zeitzone Europe/Berlin und kontrollierte Browserzeiten.
 
-## Sichtbarkeit und Fenstergrößen
+### Sichtbarkeit und Fenstergrößen
 
 `tests/chrome-windows.cjs` erfolgreich:
 
@@ -17,13 +43,13 @@ Die Originaldateien wurden mit Playwright und Chromium 154 über einen ausschlie
 
 Sichtbarkeit, Positionen und Abmessungen liegen gemeinsam unter `ruhe-tab-widget-windows-v1`. Alte Positionen werden übernommen; der alte Positionsdatensatz bleibt unverändert. Die bisherigen Prozentwerte werden als Schriftgrößen weiterverwendet. Die Fußleiste zeigt „Nur lokal.“.
 
-## Kalender- und Terminlogik
+### Kalender- und Terminlogik
 
 `node tests/calendar-model.test.mjs`: **6 Tests erfolgreich, 0 fehlgeschlagen**.
 
 Geprüft: gültige Datumswerte, Schaltjahre einschließlich Jahrhundertregeln, Montag als Wochenanfang, Monatslängen, Navigation über Monats- und Jahresgrenzen, Datumsgrenzen, Titel und optionale Uhrzeiten, chronologische Reihenfolge und ganztägige Termine sowie die Bestimmung nächster Termine anhand der lokalen Uhrzeit. Bürgerliche Datumswerte werden bei der Darstellung nicht durch eine UTC-/Ortszeit-Umrechnung auf den Vortag verschoben.
 
-## Kalender im Browser
+### Kalender im Browser
 
 `tests/chrome-calendar.cjs` erfolgreich:
 
@@ -42,7 +68,7 @@ Geprüft: gültige Datumswerte, Schaltjahre einschließlich Jahrhundertregeln, M
 
 Die Darstellung wurde zusätzlich visuell geprüft. Termine liegen einzeln unter `ruhe-tab-calendar-event.<ID>` in localStorage des Browserprofils. Es gibt keinen neuen Timer, keine externe API, keinen Hintergrundprozess und keine zusätzlichen Berechtigungen.
 
-## Vorhandene Funktionen
+### Vorhandene Funktionen
 
 Die Browserprüfungen wurden mit den neuen Dateien erneut erfolgreich ausgeführt:
 
@@ -52,6 +78,6 @@ Die Browserprüfungen wurden mit den neuen Dateien erneut erfolgreich ausgeführ
 
 JavaScript-Syntax und HTML-Struktur wurden zusätzlich geprüft: eindeutige IDs, alle Skriptdateien vorhanden. Die Sicherheitsrichtlinie blockiert weiterhin externe Verbindungen. Der vorhandene Uhr-Timer meldet seine Aktualisierung zusätzlich an den Kalender; ein zweiter Timer wird nicht angelegt.
 
-## Grenze der Prüfung
+### Grenze der Prüfung
 
 Die verwaltete Chromium-Installation blockiert eigene Erweiterungen über eine Installationsrichtlinie. Das tatsächliche Laden als entpackte Chrome-Erweiterung und Ersetzen der neuen Tab-Seite wurde deshalb hier nicht erneut bestätigt. Die Tests decken die Originaldateien, Sicherheitsrichtlinie, browserseitige Speicher und Bedienung ab. Die Anleitung enthält den Installationstest in deinem Chrome.

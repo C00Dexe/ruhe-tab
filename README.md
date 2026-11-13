@@ -64,17 +64,17 @@ Die Logiktests, UI-Prüfung und Mozilla-Manifestprüfung waren erfolgreich. **De
 MIT-Lizenz: [LICENSE.txt](ruhe-tab-firefox/LICENSE.txt).
 
 
-## Google Chrome – anpassbare Widgets (Version 1.7.0)
+## Google Chrome – schmale Leisten und Farbschemen (Version 1.8.0)
 
 Die Chrome-Version liegt im Ordner **ruhe-tab**. [Projekt als ZIP herunterladen](https://github.com/C00Dexe/ruhe-tab/archive/refs/heads/main.zip).
 
-Unten links bleibt **Chrome anpassen** erreichbar. Dort kannst du unter **Widgets** Uhr, Begrüßung, Tagesziel, Aufgabenliste, Webseiten-Verknüpfungen und Kalender einzeln ein- oder ausschalten. Jeden Typ gibt es einmal. Ausblenden erhält Inhalte, Position und Fenstergröße. Sind alle ausgeblendet, führt **Widgets hinzufügen** wieder zur Auswahl.
+Die Kopfzeile ist jetzt **32 Pixel**, die Fußzeile **40 Pixel** hoch. Das kompakte **Zahnrädchen unten links** öffnet die **Einstellungen**; erneutes Anklicken, ×, Escape oder ein Außenklick schließen sie. Dort kannst du unter **Widgets** Uhr, Begrüßung, Tagesziel, Aufgabenliste, Webseiten-Verknüpfungen und Kalender einzeln ein- oder ausschalten. Jeden Typ gibt es einmal. Ausblenden erhält Inhalte, Position und Fenstergröße. Sind alle ausgeblendet, führt **Widgets hinzufügen** wieder zur Auswahl.
 
 Über **Anordnung → Layout bearbeiten** verschiebst du Widgets an ihrer Griffleiste und änderst ihre Breite und Höhe durch Ziehen an allen Rändern und Ecken. Das × blendet das jeweilige Widget aus. **Layout fertig** beendet die Bearbeitung. Die Fenster bleiben auf den verfügbaren Platz begrenzt; längere Inhalte lassen sich im Widget scrollen. Die Schrift bleibt beim Ziehen gleich groß. Unter **Schriftgröße** gibt es dafür sechs separate Regler von **75–150 %**. Alles bleibt lokal gespeichert und wird zwischen geöffneten Ruhe-Tabs abgeglichen.
 
 **Standardanordnung wiederherstellen** ordnet neu und erhält selbst gezogene Fenstergrößen. **Standardfenstergrößen wiederherstellen** setzt nur Breite und Höhe zurück. **Standardschriftgrößen wiederherstellen** setzt nur die Prozentregler zurück. Inhalte, Hintergrund und Sichtbarkeit bleiben bei allen drei Aktionen erhalten. Die Fußleiste zeigt nur noch **Nur lokal.**
 
-Unter **Chrome anpassen** stehen außerdem drei lokale Farbverläufe und eigene JPG-, PNG- oder WebP-Bilder bis 10 MB zur Auswahl. Eigene Bilder werden einmalig proportional auf höchstens 2560 × 1440 Pixel verkleinert und lokal in IndexedDB gespeichert. Kleine Bilder werden nicht vergrößert. Die Originaldatei bleibt unverändert. ×, Escape oder ein Außenklick schließen das Anpassungsfeld.
+Unter **Einstellungen → Farbschema und Hintergrund** stehen neun dunkle Farbschemen zur Auswahl: **Wald, Nacht, Schiefer, Ozean, Lavendel, Abendrot, Sand, Rosenquarz und Graphit**. Die Vorschaukacheln zeigen die jeweiligen Farbverläufe. Hintergrund, Akzentfarben und Einstellungsfeld passen zusammen; die Auswahl bleibt ausschließlich lokal gespeichert. Eigene JPG-, PNG- oder WebP-Bilder bis 10 MB sind weiterhin möglich. Eigene Bilder werden einmalig proportional auf höchstens 2560 × 1440 Pixel verkleinert und lokal in IndexedDB gespeichert. Kleine Bilder werden nicht vergrößert. Die Originaldatei bleibt unverändert. ×, Escape oder ein Außenklick schließen das Anpassungsfeld.
 
 Zum Aktualisieren alte Ruhe-Tabs schließen, die Dateien aus dem neuen Unterordner `ruhe-tab` in den **bisherigen Chrome-Installationsordner** kopieren und unter `chrome://extensions` bei Ruhe Tab auf ↻ klicken. Den Ordnerpfad nicht ändern und die Erweiterung nicht entfernen. So wird der bisherige lokale Speicher weiterverwendet. Vorhandene Positionen werden übernommen; die bisherigen Prozentwerte bleiben als Schriftgrößen erhalten. Firefox wird mit diesem Update nicht geändert.
 

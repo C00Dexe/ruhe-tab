@@ -98,9 +98,9 @@
   </dialog>
   <footer>
     <details id="personalization">
-      <summary><span aria-hidden="true">⚙</span> Chrome anpassen</summary>
+      <summary aria-label="Einstellungen" title="Einstellungen öffnen"><span class="settings-gear" aria-hidden="true">⚙&#xFE0E;</span></summary>
       <div class="settings-panel">
-      <div class="appearance-heading panel-title"><h2>Chrome anpassen</h2><button id="close-appearance" type="button" aria-label="Anpassungsfeld schließen">×</button></div>
+      <div class="appearance-heading panel-title"><h2>Einstellungen</h2><button id="close-appearance" type="button" aria-label="Anpassungsfeld schließen">×</button></div>
       <section class="widget-manager" aria-labelledby="widget-manager-title">
         <h3 id="widget-manager-title">Widgets hinzufügen oder ausblenden</h3>
         <p class="hint">Jeden Typ gibt es einmal. Inhalte und Einstellungen bleiben beim Ausblenden erhalten.</p>
@@ -153,11 +153,18 @@
         <p id="widget-size-status" class="hint" role="status" aria-live="polite"></p>
       </section>
       <section aria-labelledby="background-title">
-        <h3 id="background-title">Hintergrund</h3>
-        <div class="background-presets" role="group" aria-label="Hintergrund auswählen">
+        <h3 id="background-title">Farbschema und Hintergrund</h3>
+        <p class="hint">Dunkle Farbschemen – vollständig lokal.</p>
+        <div class="background-presets" role="group" aria-label="Farbschema auswählen">
           <button type="button" data-background="forest" aria-pressed="true">Wald</button>
           <button type="button" data-background="night" aria-pressed="false">Nacht</button>
           <button type="button" data-background="slate" aria-pressed="false">Schiefer</button>
+          <button type="button" data-background="ocean" aria-pressed="false">Ozean</button>
+          <button type="button" data-background="lavender" aria-pressed="false">Lavendel</button>
+          <button type="button" data-background="ember" aria-pressed="false">Abendrot</button>
+          <button type="button" data-background="sand" aria-pressed="false">Sand</button>
+          <button type="button" data-background="rose" aria-pressed="false">Rosenquarz</button>
+          <button type="button" data-background="graphite" aria-pressed="false">Graphit</button>
         </div>
         <label class="image-label" for="background-file">Eigenes Bild auswählen</label>
         <input id="background-file" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="background-help">
